@@ -104,6 +104,11 @@ class WillhabenScraperTest {
                 assertThat(url.toLowerCase())
                         .as("Image URL should not be a thumbnail: " + url)
                         .doesNotContain("thumb");
+                // Extract filename and verify no _n suffix (medium-res)
+                String filename = url.substring(url.lastIndexOf('/') + 1);
+                assertThat(filename)
+                        .as("Image should be full-res, not _n: " + url)
+                        .doesNotContain("_n.");
             }
         }
     }
