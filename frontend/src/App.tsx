@@ -38,7 +38,7 @@ function App() {
         <AdminPanel />
       </div>
       {selected && (
-        <DetailPanel listing={selected} onClose={() => setSelected(null)} />
+        <DetailPanel key={selected.id} listing={selected} onClose={() => setSelected(null)} />
       )}
     </div>
   );
