@@ -1,0 +1,15 @@
+ALTER TABLE listings
+    ADD COLUMN IF NOT EXISTS net_rent        NUMERIC(10, 2),
+    ADD COLUMN IF NOT EXISTS operating_costs NUMERIC(10, 2),
+    ADD COLUMN IF NOT EXISTS vat             NUMERIC(10, 2),
+    ADD COLUMN IF NOT EXISTS deposit         NUMERIC(10, 2),
+    ADD COLUMN IF NOT EXISTS available_from  VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS provision       VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS build_year      INTEGER,
+    ADD COLUMN IF NOT EXISTS heating_demand  REAL,
+    ADD COLUMN IF NOT EXISTS fgee            REAL,
+    ADD COLUMN IF NOT EXISTS benefits        TEXT,
+    ADD COLUMN IF NOT EXISTS image_urls      TEXT,
+    ADD COLUMN IF NOT EXISTS thumbnail_url   VARCHAR(1024),
+    ADD COLUMN IF NOT EXISTS has_360_view    BOOLEAN NOT NULL DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS matterport_url  VARCHAR(1024);

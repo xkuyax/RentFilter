@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/rentfilter
+    username: rentfilter
+    password: rentfilter
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+
+map:
+  default-center:
+    lat: 47.0707
+    lng: 15.4395
+  default-zoom: 13
+
+scraping:
+  user-agent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+  request-delay-ms: 2000
+  cron: "0 0 * * * *"
