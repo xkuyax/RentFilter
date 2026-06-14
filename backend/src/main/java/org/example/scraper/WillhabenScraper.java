@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.entity.Source;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -200,56 +201,83 @@ public class WillhabenScraper extends AbstractScraper {
     }
 
     boolean enrichFromDetailPage(ListingDto dto) {
-        if (dto.getSelfLink() == null) return true;
+        if (dto.getUrl() == null || dto.getUrl().equals(SEARCH_URL)) return true;
 
         try {
-            FetchResult fr = fetch(dto.getSelfLink());
+            FetchResult fr = fetch(dto.getUrl());
             Document doc = fr.document();
 
-            JsonNode root = extractJson(doc);
-            if (root != null) {
-                Map<String, String> attrs = toAttributeMap(root.path("attributes").path("attribute"));
-
-                // Fuller description
-                String bodyDyn = attrs.get("BODY_DYN");
-                if (bodyDyn != null && bodyDyn.length() > 100) {
-                    dto.setDescription(bodyDyn);
-                }
-
-                // Floor plans
-                List<String> floorPlans = new ArrayList<>();
-                JsonNode fps = root.path("advertImageList").path("floorPlans");
-                for (JsonNode fp : fps) {
-                    String fpUrl = fp.path("referenceImageUrl").asText(null);
-                    if (fpUrl != null) {
-                        fpUrl = fpUrl.replace("_n.", ".").replace("_hoved.", ".").replace("_thumb.", ".");
-                        floorPlans.add(fpUrl);
+            // Extract all visible text from detail sections
+            StringBuilder fullText = new StringBuilder();
+            for (String heading : List.of("Objektbeschreibung", "Lage", "Sonstiges",
+                    "Objektinformationen", "Ausstattung und Freiflächen", "Preisinformation",
+                    "Zusatzinformation", "Bemerkung")) {
+                Element section = doc.selectFirst(":containsOwn(" + heading + ")");
+                if (section != null) {
+                    Element parent = section.parent();
+                    if (parent != null) {
+                        String text = parent.wholeText().trim();
+                        if (text.length() > heading.length() + 5) {
+                            fullText.append(text).append("\n\n");
+                        }
                     }
                 }
-                if (!floorPlans.isEmpty()) {
-                    List<String> all = new ArrayList<>(dto.getImageUrls() != null ? dto.getImageUrls() : List.of());
-                    all.addAll(floorPlans);
-                    dto.setImageUrls(all);
-                }
+            }
+            if (!fullText.isEmpty()) {
+                String desc = fullText.toString().replaceAll("\\s{3,}", "\n").trim();
+                if (desc.length() > 20) dto.setDescription(desc);
+            }
 
-                // Additional attributes
-                String buildYear = attrs.get("CONSTRUCTION_YEAR");
-                if (buildYear != null && dto.getBuildYear() == null) {
-                    try { dto.setBuildYear(Integer.parseInt(buildYear)); } catch (NumberFormatException ignored) {}
+            // Try to extract floor plans from embedded JSON
+            JsonNode root = extractJson(doc);
+            if (root != null) {
+                JsonNode fps = root.path("advertImageList").path("floorPlans");
+                // Also try walking all nodes for advertImageList
+                if (!fps.isArray() || fps.isEmpty()) {
+                    JsonNode walked = findInJson(root, "advertImageList");
+                    if (walked != null) fps = walked.path("floorPlans");
                 }
-                String heating = attrs.get("HEATING_TYPE");
-                if (heating != null) {
-                    List<String> benefits = dto.getBenefits() != null ? new ArrayList<>(dto.getBenefits()) : new ArrayList<>();
-                    if (!benefits.contains(heating)) benefits.add(heating);
-                    dto.setBenefits(benefits);
+                if (fps.isArray() && !fps.isEmpty()) {
+                    List<String> floorPlans = new ArrayList<>();
+                    for (JsonNode fp : fps) {
+                        String fpUrl = fp.path("referenceImageUrl").asText(null);
+                        if (fpUrl == null) fpUrl = fp.path("mainImageUrl").asText(null);
+                        if (fpUrl != null) {
+                            fpUrl = fpUrl.replace("_n.", ".").replace("_hoved.", ".").replace("_thumb.", ".");
+                            floorPlans.add(fpUrl);
+                        }
+                    }
+                    if (!floorPlans.isEmpty()) {
+                        List<String> all = new ArrayList<>(
+                                dto.getImageUrls() != null ? dto.getImageUrls() : List.of());
+                        all.addAll(floorPlans);
+                        dto.setImageUrls(all);
+                    }
                 }
             }
 
             return fr.cached();
         } catch (Exception e) {
-            log.warn("Willhaben: failed to enrich detail {}", dto.getSelfLink(), e);
+            log.warn("Willhaben: failed to enrich detail {}", dto.getUrl(), e);
             return false;
         }
+    }
+
+    private JsonNode findInJson(JsonNode node, String key) {
+        if (node.isObject()) {
+            if (node.has(key)) return node.get(key);
+            var it = node.fields();
+            while (it.hasNext()) {
+                JsonNode found = findInJson(it.next().getValue(), key);
+                if (found != null) return found;
+            }
+        } else if (node.isArray()) {
+            for (JsonNode child : node) {
+                JsonNode found = findInJson(child, key);
+                if (found != null) return found;
+            }
+        }
+        return null;
     }
 
     private JsonNode extractJson(Document doc) {
