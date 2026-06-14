@@ -212,14 +212,14 @@ public class WillhabenScraper extends AbstractScraper {
             for (String heading : List.of("Objektbeschreibung", "Lage", "Sonstiges",
                     "Objektinformationen", "Ausstattung und Freiflächen", "Preisinformation",
                     "Zusatzinformation", "Bemerkung")) {
-                Element section = doc.selectFirst(":containsOwn(" + heading + ")");
-                if (section != null) {
-                    Element parent = section.parent();
-                    if (parent != null) {
-                        String text = parent.wholeText().trim();
-                        if (text.length() > heading.length() + 5) {
-                            fullText.append(text).append("\n\n");
-                        }
+                Element el = doc.selectFirst(":containsOwn(" + heading + ")");
+                if (el == null) {
+                    el = doc.selectFirst("[data-testid*=" + heading + "]");
+                }
+                if (el != null) {
+                    Element container = el.parent();
+                    if (container != null && container.wholeText().trim().length() > heading.length() + 5) {
+                        fullText.append(container.wholeText().trim()).append("\n\n");
                     }
                 }
             }
