@@ -26,18 +26,38 @@ public class GeocodingService {
 
     private final HttpClient client = HttpClient.newHttpClient();
     private final ObjectMapper mapper = new ObjectMapper();
+    private final AddressNormalizer normalizer;
     private Instant lastRequest = Instant.EPOCH;
 
     @Value("${scraping.user-agent}")
     private String userAgent;
 
+    public GeocodingService(AddressNormalizer normalizer) {
+        this.normalizer = normalizer;
+    }
+
     public record Coords(double lat, double lng) {}
 
     public Coords geocode(String address) {
+        List<String> candidates = normalizer.normalize(address);
+        for (String candidate : candidates) {
+            Coords result = tryGeocode(candidate);
+            if (result != null) {
+                if (!candidate.equals(address)) {
+                    log.info("Geocoded via fallback: \"{}\" -> \"{}\"", address, candidate);
+                }
+                return result;
+            }
+        }
+        log.warn("All geocoding candidates failed for: {}", address);
+        return null;
+    }
+
+    private Coords tryGeocode(String query) {
         for (int attempt = 0; attempt < 3; attempt++) {
             try {
                 rateLimit();
-                String encoded = URLEncoder.encode(address, StandardCharsets.UTF_8);
+                String encoded = URLEncoder.encode(query, StandardCharsets.UTF_8);
                 var request = HttpRequest.newBuilder()
                         .uri(URI.create(NOMINATIM_URL.formatted(encoded)))
                         .header("User-Agent", userAgent)
@@ -53,7 +73,6 @@ public class GeocodingService {
                 }
 
                 if (response.statusCode() != 200) {
-                    log.warn("Nominatim returned status {} for address: {}", response.statusCode(), address);
                     return null;
                 }
 
@@ -76,7 +95,6 @@ public class GeocodingService {
                 Thread.currentThread().interrupt();
                 return null;
             } catch (Exception e) {
-                log.warn("Geocoding failed for address: {}", address, e);
                 return null;
             }
         }
@@ -99,7 +117,6 @@ public class GeocodingService {
                 listing.setLongitude(coords.lng());
                 mapper.updateCoordinates(listing);
                 filled++;
-                log.debug("Geocoded: {} -> {}, {}", listing.getAddress(), coords.lat(), coords.lng());
             }
         }
         log.info("Filled coordinates for {}/{} missing listings", filled, all.size() - withCoords.size());
@@ -109,7 +126,11 @@ public class GeocodingService {
     private void rateLimit() {
         long elapsed = Instant.now().toEpochMilli() - lastRequest.toEpochMilli();
         if (elapsed < 1100) {
-            try { Thread.sleep(1100 - elapsed); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+            try {
+                Thread.sleep(1100 - elapsed);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
         lastRequest = Instant.now();
     }
