@@ -31,6 +31,12 @@ public class ListingDto {
     private boolean has360View;
     private String matterportUrl;
 
+    // Transient — not persisted, used for enrichment
+    private String selfLink;
+
+    public String getSelfLink() { return selfLink; }
+    public void setSelfLink(String selfLink) { this.selfLink = selfLink; }
+
     // -- existing getters/setters --
 
     public String getExternalId() { return externalId; }

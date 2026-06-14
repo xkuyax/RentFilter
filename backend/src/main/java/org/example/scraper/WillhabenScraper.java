@@ -75,6 +75,15 @@ public class WillhabenScraper extends AbstractScraper {
         }
 
         log.info("Willhaben: {} listings parsed across {} pages", results.size(), totalPages);
+
+        // Enrich from detail pages
+        boolean previousCached = true;
+        for (ListingDto dto : results) {
+            boolean cached = enrichFromDetailPage(dto);
+            if (!cached && !previousCached) Thread.sleep(requestDelayMs);
+            previousCached = cached;
+        }
+
         return results;
     }
 
@@ -84,6 +93,7 @@ public class WillhabenScraper extends AbstractScraper {
 
             ListingDto dto = new ListingDto();
             dto.setExternalId(ad.path("id").asText());
+            dto.setSelfLink(ad.path("selfLink").asText(null));
             dto.setTitle(attrs.getOrDefault("HEADING", ad.path("description").asText()));
 
             // Address: city + postal code
@@ -187,6 +197,59 @@ public class WillhabenScraper extends AbstractScraper {
             }
         }
         return map;
+    }
+
+    boolean enrichFromDetailPage(ListingDto dto) {
+        if (dto.getSelfLink() == null) return true;
+
+        try {
+            FetchResult fr = fetch(dto.getSelfLink());
+            Document doc = fr.document();
+
+            JsonNode root = extractJson(doc);
+            if (root != null) {
+                Map<String, String> attrs = toAttributeMap(root.path("attributes").path("attribute"));
+
+                // Fuller description
+                String bodyDyn = attrs.get("BODY_DYN");
+                if (bodyDyn != null && bodyDyn.length() > 100) {
+                    dto.setDescription(bodyDyn);
+                }
+
+                // Floor plans
+                List<String> floorPlans = new ArrayList<>();
+                JsonNode fps = root.path("advertImageList").path("floorPlans");
+                for (JsonNode fp : fps) {
+                    String fpUrl = fp.path("referenceImageUrl").asText(null);
+                    if (fpUrl != null) {
+                        fpUrl = fpUrl.replace("_n.", ".").replace("_hoved.", ".").replace("_thumb.", ".");
+                        floorPlans.add(fpUrl);
+                    }
+                }
+                if (!floorPlans.isEmpty()) {
+                    List<String> all = new ArrayList<>(dto.getImageUrls() != null ? dto.getImageUrls() : List.of());
+                    all.addAll(floorPlans);
+                    dto.setImageUrls(all);
+                }
+
+                // Additional attributes
+                String buildYear = attrs.get("CONSTRUCTION_YEAR");
+                if (buildYear != null && dto.getBuildYear() == null) {
+                    try { dto.setBuildYear(Integer.parseInt(buildYear)); } catch (NumberFormatException ignored) {}
+                }
+                String heating = attrs.get("HEATING_TYPE");
+                if (heating != null) {
+                    List<String> benefits = dto.getBenefits() != null ? new ArrayList<>(dto.getBenefits()) : new ArrayList<>();
+                    if (!benefits.contains(heating)) benefits.add(heating);
+                    dto.setBenefits(benefits);
+                }
+            }
+
+            return fr.cached();
+        } catch (Exception e) {
+            log.warn("Willhaben: failed to enrich detail {}", dto.getSelfLink(), e);
+            return false;
+        }
     }
 
     private JsonNode extractJson(Document doc) {
