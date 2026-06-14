@@ -43,10 +43,9 @@ class WillhabenDetailEnrichmentTest {
 
         assertThat(cached).isTrue();
         assertThat(dto.getDescription()).isNotNull().isNotBlank();
-        // Should contain content, not section headings
-        assertThat(dto.getDescription()).contains("INFO:");
-        assertThat(dto.getDescription()).contains("Offene Türen");
-        assertThat(dto.getDescription()).doesNotContain("Objektbeschreibung");
+        assertThat(dto.getDescription()).contains("INFO:", "Offene Türen");
+        // Section header should be present as delimiter
+        assertThat(dto.getDescription()).contains("--- Objektbeschreibung ---");
     }
 
     @Test
@@ -56,10 +55,11 @@ class WillhabenDetailEnrichmentTest {
 
         scraper.enrichFromDetailPage(dto);
 
-        // Content text from sections should be present
-        assertThat(dto.getDescription()).contains("Zimmer");
-        // But page section headings should not be in the description
-        assertThat(dto.getDescription()).doesNotContain("Objektinformationen");
+        // Should contain multiple section headers
+        String desc = dto.getDescription();
+        assertThat(desc).contains("--- Objektinformationen ---");
+        // Objektinformationen is an attribute list with label: value format
+        assertThat(desc).contains("--- Ausstattung und Freiflächen ---");
     }
 
     @Test
@@ -70,9 +70,17 @@ class WillhabenDetailEnrichmentTest {
         scraper.enrichFromDetailPage(dto);
 
         String desc = dto.getDescription();
-        // Should contain newlines (from <li> or <br> elements)
         assertThat(desc).contains("\n");
-        // Preisinformation items should appear
+
+        // Section headers
+        assertThat(desc).contains("--- Objektinformationen ---");
+        assertThat(desc).contains("--- Objektbeschreibung ---");
+        assertThat(desc).contains("--- Preis und Detailinformation ---");
+
+        // Objektinformationen should have label: value format (uses divs, not spans)
+        assertThat(desc).contains("Objekttyp:", "Wohnung", "Wohnfläche:");
+
+        // Preis section items
         assertThat(desc).contains("Betriebskosten", "Kaution");
     }
 

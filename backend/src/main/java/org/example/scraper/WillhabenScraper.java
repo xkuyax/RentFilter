@@ -209,19 +209,26 @@ public class WillhabenScraper extends AbstractScraper {
 
             // Extract all visible text from detail sections
             StringBuilder fullText = new StringBuilder();
-            for (String heading : List.of("Objektbeschreibung", "Lage", "Sonstiges",
-                    "Objektinformationen", "Ausstattung und Freiflächen", "Preisinformation",
-                    "Zusatzinformation", "Bemerkung")) {
-                Element el = doc.selectFirst(":containsOwn(" + heading + ")");
+            for (String heading : List.of("Objektbeschreibung", "Objektinformationen",
+                    "Ausstattung und Freiflächen", "Ausstattung", "Flächen",
+                    "Preis und Detailinformation", "Preisinformation",
+                    "Zusatzinformationen", "Energieausweis")) {
+                Element el = doc.selectFirst("h2:containsOwn(" + heading + ")");
                 if (el == null) {
-                    el = doc.selectFirst("[data-testid*=" + heading + "]");
+                    el = doc.selectFirst("h3:containsOwn(" + heading + ")");
                 }
                 if (el != null) {
                     Element next = el.nextElementSibling();
                     if (next != null) {
-                        String text = extractStructuredText(next);
+                        String text;
+                        if (next.select("ul > li").size() >= 2) {
+                            text = extractAttributeList(next);
+                        } else {
+                            text = extractStructuredText(next);
+                        }
                         if (text.length() > 5) {
-                            fullText.append(text).append("\n\n");
+                            fullText.append("--- ").append(heading).append(" ---\n")
+                                    .append(text).append("\n\n");
                         }
                     }
                 }
@@ -293,6 +300,26 @@ public class WillhabenScraper extends AbstractScraper {
             } else if (node instanceof org.jsoup.nodes.TextNode) {
                 sb.append(((org.jsoup.nodes.TextNode) node).getWholeText());
             }
+        }
+        return sb.toString().trim();
+    }
+
+    // Parses a <ul> attribute list where each <li> has label + value children
+    private String extractAttributeList(Element container) {
+        StringBuilder sb = new StringBuilder();
+        for (Element li : container.select("ul > li")) {
+            // Try spans first, then divs as direct children
+            var children = li.select("> span");
+            if (children.size() < 2) children = li.select("> div");
+            if (children.size() >= 2) {
+                String label = children.get(0).wholeText().trim();
+                String value = children.get(1).wholeText().trim();
+                if (!label.isBlank() && !value.isBlank()) {
+                    sb.append(label).append(": ").append(value).append("\n");
+                    continue;
+                }
+            }
+            sb.append(li.wholeText().trim()).append("\n");
         }
         return sb.toString().trim();
     }
