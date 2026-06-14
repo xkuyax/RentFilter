@@ -48,15 +48,13 @@ public class ScraperService {
     private void runScraper(ListingScraper scraper) {
         try {
             log.info("Running scraper: {}", scraper.getSource());
-            List<ListingDto> dtos = scraper.scrape();
-            int saved = 0;
-            for (ListingDto dto : dtos) {
+            int[] saved = {0};
+            scraper.scrape(dto -> {
                 if (saveOrUpdate(scraper.getSource(), dto)) {
-                    saved++;
+                    saved[0]++;
                 }
-            }
-            log.info("{}: {} new/updated listings out of {} fetched",
-                    scraper.getSource(), saved, dtos.size());
+            });
+            log.info("{}: {} new/updated listings fetched", scraper.getSource(), saved[0]);
         } catch (Exception e) {
             log.error("Scraper {} failed", scraper.getSource(), e);
         }

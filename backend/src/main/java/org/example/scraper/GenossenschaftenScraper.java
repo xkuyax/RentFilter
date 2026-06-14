@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,8 +33,7 @@ public class GenossenschaftenScraper extends AbstractScraper {
     }
 
     @Override
-    public List<ListingDto> scrape() throws Exception {
-        List<ListingDto> results = new ArrayList<>();
+    public void scrape(Consumer<ListingDto> onListing) throws Exception {
         int page = 1;
         int totalPages = 1;
 
@@ -57,10 +57,14 @@ public class GenossenschaftenScraper extends AbstractScraper {
                 }
             }
 
+            boolean previousCached = true;
             for (Element card : doc.select(".residence-teaser")) {
                 ListingDto dto = parseCard(card);
                 if (dto != null) {
-                    results.add(dto);
+                    boolean cached = enrichAndReturnCached(dto);
+                    onListing.accept(dto);
+                    if (!cached && !previousCached) Thread.sleep(requestDelayMs);
+                    previousCached = cached;
                 }
             }
 
@@ -68,17 +72,6 @@ public class GenossenschaftenScraper extends AbstractScraper {
             page++;
             if (!fr.cached()) Thread.sleep(requestDelayMs);
         }
-
-        log.info("Genossenschaften: {} listings found across {} pages", results.size(), totalPages);
-
-        boolean previousCached = true;
-        for (ListingDto dto : results) {
-            boolean cached = enrichAndReturnCached(dto);
-            if (!cached && !previousCached) Thread.sleep(requestDelayMs);
-            previousCached = cached;
-        }
-
-        return results;
     }
 
     ListingDto parseCard(Element card) {

@@ -14,6 +14,7 @@ import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -127,6 +128,8 @@ class ScraperServiceTest {
         @Override
         public Source getSource() { return source; }
         @Override
-        public List<ListingDto> scrape() { return dtos; }
+        public void scrape(Consumer<ListingDto> onListing) {
+            dtos.forEach(onListing);
+        }
     }
 }

@@ -5,6 +5,7 @@ import org.example.scraper.HtmlCache;
 import org.example.scraper.ListingDto;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PopulateCache {
@@ -20,7 +21,8 @@ public class PopulateCache {
 
         System.out.println("Fetching all Graz listings (this will take a while)...");
         long start = System.currentTimeMillis();
-        List<ListingDto> results = scraper.scrape();
+        List<ListingDto> results = new ArrayList<>();
+        scraper.scrape(results::add);
         long elapsed = (System.currentTimeMillis() - start) / 1000;
 
         System.out.println("\nDone! " + results.size() + " listings fetched in " + elapsed + "s");

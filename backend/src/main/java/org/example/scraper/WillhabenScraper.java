@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,10 +33,10 @@ public class WillhabenScraper extends AbstractScraper {
     }
 
     @Override
-    public List<ListingDto> scrape() throws Exception {
-        List<ListingDto> results = new ArrayList<>();
+    public void scrape(Consumer<ListingDto> onListing) throws Exception {
         int page = 1;
         int totalPages = 1;
+        boolean previousCached = true;
 
         while (page <= totalPages) {
             String url = SEARCH_URL + "?page=" + page + "&rows=30";
@@ -67,25 +68,18 @@ public class WillhabenScraper extends AbstractScraper {
             }
             for (JsonNode ad : ads) {
                 ListingDto dto = parseAd(ad);
-                if (dto != null) results.add(dto);
+                if (dto != null) {
+                    boolean cached = enrichFromDetailPage(dto);
+                    onListing.accept(dto);
+                    if (!cached && !previousCached) Thread.sleep(requestDelayMs);
+                    previousCached = cached;
+                }
             }
 
             if (page >= totalPages) break;
             page++;
             if (!fr.cached()) Thread.sleep(requestDelayMs);
         }
-
-        log.info("Willhaben: {} listings parsed across {} pages", results.size(), totalPages);
-
-        // Enrich from detail pages
-        boolean previousCached = true;
-        for (ListingDto dto : results) {
-            boolean cached = enrichFromDetailPage(dto);
-            if (!cached && !previousCached) Thread.sleep(requestDelayMs);
-            previousCached = cached;
-        }
-
-        return results;
     }
 
     ListingDto parseAd(JsonNode ad) {

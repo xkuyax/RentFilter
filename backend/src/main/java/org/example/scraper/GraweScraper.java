@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,9 +41,7 @@ public class GraweScraper extends AbstractScraper {
     }
 
     @Override
-    public List<ListingDto> scrape() throws Exception {
-        List<ListingDto> results = new ArrayList<>();
-
+    public void scrape(Consumer<ListingDto> onListing) throws Exception {
         int page = 1;
         int totalPages = 1;
 
@@ -79,10 +78,14 @@ public class GraweScraper extends AbstractScraper {
             String htmlOutput = data.get("output").asText();
 
             Document html = Jsoup.parse(htmlOutput);
+            boolean previousCached = true;
             for (Element card : html.select(".similar-property-item")) {
                 ListingDto dto = parseCard(card);
                 if (dto != null) {
-                    results.add(dto);
+                    boolean cached = enrichAndReturnCached(dto);
+                    onListing.accept(dto);
+                    if (!cached && !previousCached) Thread.sleep(requestDelayMs);
+                    previousCached = cached;
                 }
             }
 
@@ -90,17 +93,6 @@ public class GraweScraper extends AbstractScraper {
             page++;
             if (!isCacheEnabled()) Thread.sleep(requestDelayMs);
         }
-
-        log.info("Grawe: {} listings found across {} pages", results.size(), totalPages);
-
-        boolean previousCached = true;
-        for (ListingDto dto : results) {
-            boolean cached = enrichAndReturnCached(dto);
-            if (!cached && !previousCached) Thread.sleep(requestDelayMs);
-            previousCached = cached;
-        }
-
-        return results;
     }
 
     private boolean isCacheEnabled() {
