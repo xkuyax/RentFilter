@@ -19,8 +19,12 @@ public abstract class AbstractScraper implements ListingScraper {
     @Value("${scraping.request-delay-ms}")
     protected int requestDelayMs;
 
-    @Autowired
     protected HtmlCache cache;
+
+    @Autowired
+    public void setCache(HtmlCache cache) {
+        this.cache = cache;
+    }
 
     private final Random random = new Random();
 

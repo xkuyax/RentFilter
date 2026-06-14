@@ -31,6 +31,10 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
+tasks.named<JavaExec>("bootRun") {
+    workingDir = rootProject.projectDir
+}
+
 tasks.register<JavaExec>("debugScrape") {
     classpath = sourceSets.main.get().runtimeClasspath
     mainClass = "org.example.debug.ScraperDebugger"
