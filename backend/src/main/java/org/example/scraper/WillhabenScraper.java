@@ -56,11 +56,20 @@ public class WillhabenScraper extends AbstractScraper {
             }
 
             JsonNode searchResult = root.path("props").path("pageProps").path("searchResult");
-            int rowsFound = searchResult.path("rowsFound").asInt();
-            int rowsReturned = searchResult.path("rowsReturned").asInt();
-            totalPages = (int) Math.ceil((double) rowsFound / rowsReturned);
+
+            if (page == 1) {
+                int rowsFound = searchResult.path("rowsFound").asInt();
+                int rowsReturned = searchResult.path("rowsReturned").asInt();
+                if (rowsReturned > 0) {
+                    totalPages = (int) Math.ceil((double) rowsFound / rowsReturned);
+                }
+            }
 
             JsonNode ads = searchResult.path("advertSummaryList").path("advertSummary");
+            if (!ads.isArray() || ads.isEmpty()) {
+                log.info("Willhaben: no more ads on page {}", page);
+                break;
+            }
             for (JsonNode ad : ads) {
                 ListingDto dto = parseAd(ad);
                 if (dto != null) results.add(dto);
