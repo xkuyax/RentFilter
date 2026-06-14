@@ -10,9 +10,8 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 class GraweScraperTest {
 
@@ -41,17 +40,15 @@ class GraweScraperTest {
 
         ListingDto dto = scraper.parseCard(firstCard);
 
-        assertNotNull(dto);
-        assertEquals("1070", dto.getExternalId());
-        assertTrue(dto.getTitle().contains("2-Zimmer-Wohnung"));
-        assertTrue(dto.getUrl().contains("immobilien_id=1070"));
-        assertEquals(2.0f, dto.getRooms());
-        assertNotNull(dto.getPrice());
-        assertTrue(dto.getPrice().floatValue() > 0);
-        assertNotNull(dto.getArea());
-        assertTrue(dto.getArea() > 0);
-        assertNotNull(dto.getThumbnailUrl());
-        assertTrue(dto.getThumbnailUrl().contains("properties"));
+        assertThat(dto).isNotNull();
+        assertThat(dto.getExternalId()).isEqualTo("1070");
+        assertThat(dto.getTitle()).contains("2-Zimmer-Wohnung");
+        assertThat(dto.getUrl()).contains("immobilien_id=1070");
+        assertThat(dto.getRooms()).isEqualTo(2.0f);
+        assertThat(dto.getPrice()).isNotNull();
+        assertThat(dto.getPrice().floatValue()).isPositive();
+        assertThat(dto.getArea()).isNotNull().isPositive();
+        assertThat(dto.getThumbnailUrl()).isNotNull().contains("properties");
     }
 
     @Test
@@ -67,27 +64,32 @@ class GraweScraperTest {
         for (Element card : cards) {
             ListingDto dto = scraper.parseCard(card);
             if (dto != null) {
-                assertNotNull(dto.getTitle());
-                assertNotNull(dto.getUrl());
-                assertNotNull(dto.getExternalId());
-                assertNotNull(dto.getThumbnailUrl());
+                assertThat(dto.getTitle()).isNotNull();
+                assertThat(dto.getUrl()).isNotNull();
+                assertThat(dto.getExternalId()).isNotNull();
+                assertThat(dto.getThumbnailUrl()).isNotNull();
                 parsed++;
             }
         }
-        assertEquals(3, parsed);
+        assertThat(parsed).isEqualTo(3);
     }
 
     @Test
     void extractAddressFromTitle_parsesKnownFormat() {
         String title = "2-Zimmer-Wohnung mit Balkon | Friedrichgasse 3, 8010 Graz | GRAWEwohnen";
-        assertEquals("Friedrichgasse 3, 8010 Graz", scraper.extractAddressFromTitle(title));
+        assertThat(scraper.extractAddressFromTitle(title))
+                .isEqualTo("Friedrichgasse 3, 8010 Graz");
     }
 
     @Test
     void extractAddressFromTitle_fromRealPage() {
         String address = scraper.extractAddressFromTitle(detailPageDoc.title());
-        assertNotNull(address);
-        assertTrue(address.contains("Friedrichgasse") || address.contains("8010") || address.contains("Graz"));
+        assertThat(address).isNotNull();
+        assertThat(address).satisfiesAnyOf(
+                a -> assertThat(a).contains("Friedrichgasse"),
+                a -> assertThat(a).contains("8010"),
+                a -> assertThat(a).contains("Graz")
+        );
     }
 
     @Test
@@ -95,12 +97,9 @@ class GraweScraperTest {
         ListingDto dto = new ListingDto();
         scraper.extractImages(detailPageDoc, dto);
 
-        assertNotNull(dto.getImageUrls());
-        assertFalse(dto.getImageUrls().isEmpty());
-        assertTrue(dto.getImageUrls().size() >= 5, "Expected at least 5 gallery images");
-        for (String url : dto.getImageUrls()) {
-            assertTrue(url.contains("properties/"));
-        }
+        assertThat(dto.getImageUrls()).isNotNull().isNotEmpty();
+        assertThat(dto.getImageUrls()).hasSizeGreaterThanOrEqualTo(5);
+        assertThat(dto.getImageUrls()).allMatch(url -> url.contains("properties/"));
     }
 
     @Test
@@ -108,10 +107,8 @@ class GraweScraperTest {
         ListingDto dto = new ListingDto();
         scraper.extractBenefits(detailPageDoc, dto);
 
-        assertNotNull(dto.getBenefits());
-        assertFalse(dto.getBenefits().isEmpty());
-        assertTrue(dto.getBenefits().contains("Balkon/Terrasse/Garten"));
-        assertTrue(dto.getBenefits().contains("Altbau"));
+        assertThat(dto.getBenefits()).isNotNull().isNotEmpty();
+        assertThat(dto.getBenefits()).contains("Balkon/Terrasse/Garten", "Altbau");
     }
 
     @Test
@@ -119,17 +116,17 @@ class GraweScraperTest {
         ListingDto dto = new ListingDto();
         scraper.extractCostTable(detailPageDoc, dto);
 
-        assertNotNull(dto.getNetRent());
-        assertTrue(dto.getNetRent().floatValue() > 100);
-        assertNotNull(dto.getOperatingCosts());
-        assertTrue(dto.getOperatingCosts().floatValue() > 0);
-        assertNotNull(dto.getVat());
-        assertTrue(dto.getVat().floatValue() > 0);
-        assertNotNull(dto.getDeposit());
-        assertTrue(dto.getDeposit().floatValue() > 100);
-        assertEquals("ab sofort", dto.getAvailableFrom());
-        assertEquals("Nein", dto.getProvision());
-        assertEquals(1880, dto.getBuildYear());
+        assertThat(dto.getNetRent()).isNotNull();
+        assertThat(dto.getNetRent().floatValue()).isGreaterThan(100f);
+        assertThat(dto.getOperatingCosts()).isNotNull();
+        assertThat(dto.getOperatingCosts().floatValue()).isPositive();
+        assertThat(dto.getVat()).isNotNull();
+        assertThat(dto.getVat().floatValue()).isPositive();
+        assertThat(dto.getDeposit()).isNotNull();
+        assertThat(dto.getDeposit().floatValue()).isGreaterThan(100f);
+        assertThat(dto.getAvailableFrom()).isEqualTo("ab sofort");
+        assertThat(dto.getProvision()).isEqualTo("Nein");
+        assertThat(dto.getBuildYear()).isEqualTo(1880);
     }
 
     @Test
@@ -137,10 +134,10 @@ class GraweScraperTest {
         ListingDto dto = new ListingDto();
         scraper.extractEnergyInfo(detailPageDoc, dto);
 
-        assertNotNull(dto.getHeatingDemand());
-        assertEquals(98.2f, dto.getHeatingDemand(), 0.01);
-        assertNotNull(dto.getFgee());
-        assertEquals(1.62f, dto.getFgee(), 0.01);
+        assertThat(dto.getHeatingDemand()).isNotNull();
+        assertThat(dto.getHeatingDemand()).isCloseTo(98.2f, within(0.01f));
+        assertThat(dto.getFgee()).isNotNull();
+        assertThat(dto.getFgee()).isCloseTo(1.62f, within(0.01f));
     }
 
     @Test
@@ -148,25 +145,24 @@ class GraweScraperTest {
         ListingDto dto = new ListingDto();
         scraper.extract360View(detailPageDoc, dto);
 
-        assertTrue(dto.isHas360View());
-        assertNotNull(dto.getMatterportUrl());
-        assertTrue(dto.getMatterportUrl().contains("matterport"));
+        assertThat(dto.isHas360View()).isTrue();
+        assertThat(dto.getMatterportUrl()).isNotNull().contains("matterport");
     }
 
     @Test
     void roomsPattern_matchesOneDigit() {
         var pattern = java.util.regex.Pattern.compile("(\\d+)[-\\s]Zimmer");
         var m = pattern.matcher("2-Zimmer-Wohnung in Graz");
-        assertTrue(m.find());
-        assertEquals("2", m.group(1));
+        assertThat(m.find()).isTrue();
+        assertThat(m.group(1)).isEqualTo("2");
     }
 
     @Test
     void roomsPattern_matchesInTitle() {
         var pattern = java.util.regex.Pattern.compile("(\\d+)[-\\s]Zimmer");
         var m = pattern.matcher("3 Zimmer Wohnung mit Balkon");
-        assertTrue(m.find());
-        assertEquals("3", m.group(1));
+        assertThat(m.find()).isTrue();
+        assertThat(m.group(1)).isEqualTo("3");
     }
 
     private static void setField(Object target, String name, Object value) throws Exception {

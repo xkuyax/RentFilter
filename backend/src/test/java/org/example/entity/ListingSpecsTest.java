@@ -11,7 +11,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 @DataJpaTest
 class ListingSpecsTest {
@@ -57,56 +57,56 @@ class ListingSpecsTest {
     void filterBySource() {
         Specification<Listing> spec = ListingSpecs.filter(Source.GRAWE, null, null, null, null);
         Page<Listing> result = repository.findAll(spec, PageRequest.of(0, 10));
-        assertEquals(2, result.getTotalElements());
+        assertThat(result.getTotalElements()).isEqualTo(2);
     }
 
     @Test
     void filterByMinPrice() {
         Specification<Listing> spec = ListingSpecs.filter(null, new BigDecimal("800"), null, null, null);
         Page<Listing> result = repository.findAll(spec, PageRequest.of(0, 10));
-        assertEquals(2, result.getTotalElements());
+        assertThat(result.getTotalElements()).isEqualTo(2);
     }
 
     @Test
     void filterByMaxPrice() {
         Specification<Listing> spec = ListingSpecs.filter(null, null, new BigDecimal("600"), null, null);
         Page<Listing> result = repository.findAll(spec, PageRequest.of(0, 10));
-        assertEquals(1, result.getTotalElements());
+        assertThat(result.getTotalElements()).isEqualTo(1);
     }
 
     @Test
     void filterByPriceRange() {
         Specification<Listing> spec = ListingSpecs.filter(null, new BigDecimal("500"), new BigDecimal("900"), null, null);
         Page<Listing> result = repository.findAll(spec, PageRequest.of(0, 10));
-        assertEquals(2, result.getTotalElements());
+        assertThat(result.getTotalElements()).isEqualTo(2);
     }
 
     @Test
     void filterByMinRooms() {
         Specification<Listing> spec = ListingSpecs.filter(null, null, null, 2.0f, null);
         Page<Listing> result = repository.findAll(spec, PageRequest.of(0, 10));
-        assertEquals(2, result.getTotalElements());
+        assertThat(result.getTotalElements()).isEqualTo(2);
     }
 
     @Test
     void filterByMinArea() {
         Specification<Listing> spec = ListingSpecs.filter(null, null, null, null, 55.0f);
         Page<Listing> result = repository.findAll(spec, PageRequest.of(0, 10));
-        assertEquals(2, result.getTotalElements());
+        assertThat(result.getTotalElements()).isEqualTo(2);
     }
 
     @Test
     void filterCombined() {
         Specification<Listing> spec = ListingSpecs.filter(Source.GRAWE, null, new BigDecimal("900"), 2.0f, null);
         Page<Listing> result = repository.findAll(spec, PageRequest.of(0, 10));
-        assertEquals(1, result.getTotalElements());
-        assertEquals("Medium apartment", result.getContent().get(0).getTitle());
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getContent().get(0).getTitle()).isEqualTo("Medium apartment");
     }
 
     @Test
     void noFilterReturnsAll() {
         Specification<Listing> spec = ListingSpecs.filter(null, null, null, null, null);
         Page<Listing> result = repository.findAll(spec, PageRequest.of(0, 10));
-        assertEquals(3, result.getTotalElements());
+        assertThat(result.getTotalElements()).isEqualTo(3);
     }
 }

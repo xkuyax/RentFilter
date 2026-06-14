@@ -13,7 +13,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import java.math.BigDecimal;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 @DataJpaTest
 class ScraperServiceTest {
@@ -28,7 +28,7 @@ class ScraperServiceTest {
 
     @Test
     void savesNewListings() {
-        assertTrue(repository.findAll().isEmpty());
+        assertThat(repository.findAll()).isEmpty();
 
         var dto = createDto("1", "Test Apartment", new BigDecimal("500"), 2.0f, 50.0f,
                 "Testgasse 1, Graz", "https://example.com/1");
@@ -51,25 +51,26 @@ class ScraperServiceTest {
         var svc = new ScraperService(testScrapers, repository, null);
         svc.fetchAll();
 
-        assertEquals(1, repository.count());
+        assertThat(repository.count()).isEqualTo(1);
         Listing saved = repository.findByUrl("https://example.com/1").orElseThrow();
-        assertEquals("Test Apartment", saved.getTitle());
-        assertEquals(Source.GRAWE, saved.getSource());
-        assertEquals(new BigDecimal("500"), saved.getPrice());
-        assertEquals(new BigDecimal("300"), saved.getNetRent());
-        assertEquals(new BigDecimal("150"), saved.getOperatingCosts());
-        assertEquals(new BigDecimal("50"), saved.getVat());
-        assertEquals(new BigDecimal("1500"), saved.getDeposit());
-        assertEquals("ab sofort", saved.getAvailableFrom());
-        assertEquals("Nein", saved.getProvision());
-        assertEquals(1990, saved.getBuildYear());
-        assertEquals(80.0f, saved.getHeatingDemand());
-        assertEquals(1.5f, saved.getFgee());
-        assertTrue(saved.getBenefits().contains("Balkon"));
-        assertTrue(saved.getImageUrls().contains("img.example.com"));
-        assertEquals("https://img.example.com/thumb.jpg", saved.getThumbnailUrl());
-        assertTrue(saved.isHas360View());
-        assertEquals("https://matterport.com/1", saved.getMatterportUrl());
+
+        assertThat(saved.getTitle()).isEqualTo("Test Apartment");
+        assertThat(saved.getSource()).isEqualTo(Source.GRAWE);
+        assertThat(saved.getPrice()).isEqualByComparingTo("500");
+        assertThat(saved.getNetRent()).isEqualByComparingTo("300");
+        assertThat(saved.getOperatingCosts()).isEqualByComparingTo("150");
+        assertThat(saved.getVat()).isEqualByComparingTo("50");
+        assertThat(saved.getDeposit()).isEqualByComparingTo("1500");
+        assertThat(saved.getAvailableFrom()).isEqualTo("ab sofort");
+        assertThat(saved.getProvision()).isEqualTo("Nein");
+        assertThat(saved.getBuildYear()).isEqualTo(1990);
+        assertThat(saved.getHeatingDemand()).isEqualTo(80.0f);
+        assertThat(saved.getFgee()).isEqualTo(1.5f);
+        assertThat(saved.getBenefits()).contains("Balkon");
+        assertThat(saved.getImageUrls()).contains("img.example.com");
+        assertThat(saved.getThumbnailUrl()).isEqualTo("https://img.example.com/thumb.jpg");
+        assertThat(saved.isHas360View()).isTrue();
+        assertThat(saved.getMatterportUrl()).isEqualTo("https://matterport.com/1");
     }
 
     @Test
@@ -81,7 +82,7 @@ class ScraperServiceTest {
         var svc = new ScraperService(testScrapers, repository, null);
         svc.fetchAll();
 
-        assertEquals(1, repository.count());
+        assertThat(repository.count()).isEqualTo(1);
     }
 
     @Test
@@ -100,9 +101,9 @@ class ScraperServiceTest {
         var svc = new ScraperService(testScrapers, repository, null);
         svc.fetchAll();
 
-        assertEquals(1, repository.count());
+        assertThat(repository.count()).isEqualTo(1);
         Listing found = repository.findByUrl("https://example.com/1").orElseThrow();
-        assertEquals("Already saved", found.getTitle());
+        assertThat(found.getTitle()).isEqualTo("Already saved");
     }
 
     private ListingDto createDto(String extId, String title, BigDecimal price,
