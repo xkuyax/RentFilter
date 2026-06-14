@@ -217,10 +217,9 @@ public class WillhabenScraper extends AbstractScraper {
                     el = doc.selectFirst("[data-testid*=" + heading + "]");
                 }
                 if (el != null) {
-                    // Get the NEXT sibling's text (actual content, not the heading itself)
                     Element next = el.nextElementSibling();
                     if (next != null) {
-                        String text = next.wholeText().trim();
+                        String text = extractStructuredText(next);
                         if (text.length() > 5) {
                             fullText.append(text).append("\n\n");
                         }
@@ -228,7 +227,10 @@ public class WillhabenScraper extends AbstractScraper {
                 }
             }
             if (!fullText.isEmpty()) {
-                String desc = fullText.toString().replaceAll("\\s{3,}", "\n").trim();
+                String desc = fullText.toString()
+                        .replaceAll("\\n{3,}", "\n\n")
+                        .replaceAll(" {2,}", " ")
+                        .trim();
                 if (desc.length() > 20) dto.setDescription(desc);
             }
 
@@ -265,6 +267,34 @@ public class WillhabenScraper extends AbstractScraper {
             log.warn("Willhaben: failed to enrich detail {}", dto.getUrl(), e);
             return false;
         }
+    }
+
+    private String extractStructuredText(Element el) {
+        StringBuilder sb = new StringBuilder();
+        for (org.jsoup.nodes.Node node : el.childNodes()) {
+            if (node instanceof Element child) {
+                switch (child.tagName().toLowerCase()) {
+                    case "br" -> sb.append("\n");
+                    case "li" -> sb.append("\n").append(child.wholeText().trim());
+                    case "ul", "ol" -> {
+                        for (Element li : child.select("> li")) {
+                            sb.append("\n").append(li.wholeText().trim());
+                        }
+                    }
+                    case "p", "div" -> {
+                        String t = extractStructuredText(child).trim();
+                        if (!t.isBlank()) sb.append("\n").append(t);
+                    }
+                    default -> {
+                        String t = extractStructuredText(child).trim();
+                        if (!t.isBlank()) sb.append(" ").append(t);
+                    }
+                }
+            } else if (node instanceof org.jsoup.nodes.TextNode) {
+                sb.append(((org.jsoup.nodes.TextNode) node).getWholeText());
+            }
+        }
+        return sb.toString().trim();
     }
 
     private JsonNode findInJson(JsonNode node, String key) {
