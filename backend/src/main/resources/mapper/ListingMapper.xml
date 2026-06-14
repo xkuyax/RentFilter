@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.entity.ListingMapper">
+
+    <resultMap id="listingMap" type="org.example.entity.Listing">
+        <id property="id" column="id"/>
+        <result property="externalId" column="external_id"/>
+        <result property="source" column="source"/>
+        <result property="title" column="title"/>
+        <result property="description" column="description"/>
+        <result property="price" column="price"/>
+        <result property="rooms" column="rooms"/>
+        <result property="area" column="area_sqm"/>
+        <result property="address" column="address"/>
+        <result property="latitude" column="latitude"/>
+        <result property="longitude" column="longitude"/>
+        <result property="url" column="url"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="netRent" column="net_rent"/>
+        <result property="operatingCosts" column="operating_costs"/>
+        <result property="vat" column="vat"/>
+        <result property="deposit" column="deposit"/>
+        <result property="availableFrom" column="available_from"/>
+        <result property="provision" column="provision"/>
+        <result property="buildYear" column="build_year"/>
+        <result property="heatingDemand" column="heating_demand"/>
+        <result property="fgee" column="fgee"/>
+        <result property="benefits" column="benefits"/>
+        <result property="imageUrls" column="image_urls"/>
+        <result property="thumbnailUrl" column="thumbnail_url"/>
+        <result property="has360View" column="has_360_view"/>
+        <result property="matterportUrl" column="matterport_url"/>
+    </resultMap>
+
+    <select id="findByUrl" resultMap="listingMap">
+        SELECT * FROM listings WHERE url = #{url}
+    </select>
+
+    <select id="existsByUrl" resultType="boolean">
+        SELECT EXISTS(SELECT 1 FROM listings WHERE url = #{url})
+    </select>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM listings
+    </select>
+
+    <select id="findById" resultMap="listingMap">
+        SELECT * FROM listings WHERE id = #{id}
+    </select>
+
+    <select id="findAllWithCoords" resultMap="listingMap">
+        SELECT * FROM listings WHERE latitude IS NOT NULL AND longitude IS NOT NULL
+    </select>
+
+    <select id="countFiltered" resultType="long">
+        SELECT COUNT(*) FROM listings
+        <where>
+            <if test="source != null">AND source = #{source}</if>
+            <if test="minPrice != null">AND price &gt;= #{minPrice}</if>
+            <if test="maxPrice != null">AND price &lt;= #{maxPrice}</if>
+            <if test="minRooms != null">AND rooms &gt;= #{minRooms}</if>
+            <if test="minArea != null">AND area_sqm &gt;= #{minArea}</if>
+        </where>
+    </select>
+
+    <select id="findAllFiltered" resultMap="listingMap">
+        SELECT * FROM listings
+        <where>
+            <if test="source != null">AND source = #{source}</if>
+            <if test="minPrice != null">AND price &gt;= #{minPrice}</if>
+            <if test="maxPrice != null">AND price &lt;= #{maxPrice}</if>
+            <if test="minRooms != null">AND rooms &gt;= #{minRooms}</if>
+            <if test="minArea != null">AND area_sqm &gt;= #{minArea}</if>
+        </where>
+        ORDER BY created_at DESC
+        <if test="limit > 0">LIMIT #{limit} OFFSET #{offset}</if>
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO listings (
+            external_id, source, title, description, price, rooms, area_sqm,
+            address, latitude, longitude, url,
+            net_rent, operating_costs, vat, deposit, available_from, provision,
+            build_year, heating_demand, fgee, benefits, image_urls, thumbnail_url,
+            has_360_view, matterport_url, created_at, updated_at
+        ) VALUES (
+            #{externalId}, #{source}, #{title}, #{description}, #{price}, #{rooms}, #{area},
+            #{address}, #{latitude}, #{longitude}, #{url},
+            #{netRent}, #{operatingCosts}, #{vat}, #{deposit}, #{availableFrom}, #{provision},
+            #{buildYear}, #{heatingDemand}, #{fgee}, #{benefits}, #{imageUrls}, #{thumbnailUrl},
+            #{has360View}, #{matterportUrl}, NOW(), NOW()
+        )
+    </insert>
+
+    <delete id="deleteAll">
+        DELETE FROM listings
+    </delete>
+
+</mapper>

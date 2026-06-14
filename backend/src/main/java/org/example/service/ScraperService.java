@@ -3,7 +3,7 @@ package org.example.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.entity.Listing;
-import org.example.entity.ListingRepository;
+import org.example.entity.ListingMapper;
 import org.example.entity.Source;
 import org.example.scraper.ListingDto;
 import org.example.scraper.ListingScraper;
@@ -20,15 +20,15 @@ public class ScraperService {
     private static final Logger log = LoggerFactory.getLogger(ScraperService.class);
 
     private final List<ListingScraper> scrapers;
-    private final ListingRepository listingRepository;
+    private final ListingMapper listingMapper;
     private final GeocodingService geocodingService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public ScraperService(List<ListingScraper> scrapers,
-                          ListingRepository listingRepository,
+                          ListingMapper listingMapper,
                           GeocodingService geocodingService) {
         this.scrapers = scrapers;
-        this.listingRepository = listingRepository;
+        this.listingMapper = listingMapper;
         this.geocodingService = geocodingService;
     }
 
@@ -52,7 +52,7 @@ public class ScraperService {
     }
 
     private boolean saveOrUpdate(Source source, ListingDto dto) {
-        Optional<Listing> existing = listingRepository.findByUrl(dto.getUrl());
+        Optional<Listing> existing = listingMapper.findByUrl(dto.getUrl());
         if (existing.isPresent()) {
             return false;
         }
@@ -94,7 +94,7 @@ public class ScraperService {
             }
         }
 
-        listingRepository.save(listing);
+        listingMapper.insert(listing);
         return true;
     }
 

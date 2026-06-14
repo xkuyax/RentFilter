@@ -3,8 +3,6 @@ package org.example.controller;
 import org.example.entity.Listing;
 import org.example.entity.Source;
 import org.example.service.ListingService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,14 +20,27 @@ public class ListingController {
     }
 
     @GetMapping
-    public Page<Listing> getListings(
+    public Map<String, Object> getListings(
             @RequestParam(required = false) Source source,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) Float minRooms,
             @RequestParam(required = false) Float minArea,
-            Pageable pageable) {
-        return listingService.findListings(source, minPrice, maxPrice, minRooms, minArea, pageable);
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+
+        String src = source != null ? source.name() : null;
+        List<Listing> content = listingService.findListings(
+                src, minPrice, maxPrice, minRooms, minArea, page * size, size);
+        long total = listingService.countFiltered(src, minPrice, maxPrice, minRooms, minArea);
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("content", content);
+        result.put("totalElements", total);
+        result.put("totalPages", (int) Math.ceil((double) total / size));
+        result.put("number", page);
+        result.put("size", size);
+        return result;
     }
 
     @GetMapping("/{id}")
@@ -41,11 +52,8 @@ public class ListingController {
 
     @GetMapping("/map")
     public Map<String, Object> getMapListings() {
-        List<Map<String, Object>> features = listingService.findListings(
-                        null, null, null, null, null,
-                        Pageable.unpaged())
+        List<Map<String, Object>> features = listingService.findAllWithCoords()
                 .stream()
-                .filter(l -> l.getLatitude() != null && l.getLongitude() != null)
                 .map(this::toGeoJsonFeature)
                 .toList();
 
@@ -58,10 +66,6 @@ public class ListingController {
     private Map<String, Object> toGeoJsonFeature(Listing listing) {
         Map<String, Object> feature = new LinkedHashMap<>();
         feature.put("type", "Feature");
-
-        Map<String, Double> coordinates = new LinkedHashMap<>();
-        coordinates.put("lat", listing.getLatitude());
-        coordinates.put("lng", listing.getLongitude());
 
         Map<String, Object> properties = new LinkedHashMap<>();
         properties.put("id", listing.getId());

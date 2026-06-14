@@ -1,34 +1,38 @@
 package org.example.service;
 
 import org.example.entity.Listing;
-import org.example.entity.ListingRepository;
+import org.example.entity.ListingMapper;
 import org.example.entity.Source;
 import org.example.scraper.ListingDto;
 import org.example.scraper.ListingScraper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.test.context.jdbc.Sql;
+import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 
-@DataJpaTest
+@MybatisTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Sql(scripts = "classpath:sql/schema.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 class ScraperServiceTest {
 
     @Autowired
-    private ListingRepository repository;
+    private ListingMapper mapper;
 
     @BeforeEach
     void setUp() {
-        repository.deleteAll();
+        mapper.deleteAll();
     }
 
     @Test
     void savesNewListings() {
-        assertThat(repository.findAll()).isEmpty();
+        assertThat(mapper.count()).isZero();
 
         var dto = createDto("1", "Test Apartment", new BigDecimal("500"), 2.0f, 50.0f,
                 "Testgasse 1, Graz", "https://example.com/1");
@@ -47,12 +51,12 @@ class ScraperServiceTest {
         dto.setHas360View(true);
         dto.setMatterportUrl("https://matterport.com/1");
 
-        List<ListingScraper> testScrapers = List.of(new TestScraper(Source.GRAWE, List.of(dto)));
-        var svc = new ScraperService(testScrapers, repository, null);
+        var svc = new ScraperService(
+                List.of(new TestScraper(Source.GRAWE, List.of(dto))), mapper, null);
         svc.fetchAll();
 
-        assertThat(repository.count()).isEqualTo(1);
-        Listing saved = repository.findByUrl("https://example.com/1").orElseThrow();
+        assertThat(mapper.count()).isEqualTo(1);
+        Listing saved = mapper.findByUrl("https://example.com/1").orElseThrow();
 
         assertThat(saved.getTitle()).isEqualTo("Test Apartment");
         assertThat(saved.getSource()).isEqualTo(Source.GRAWE);
@@ -78,11 +82,11 @@ class ScraperServiceTest {
         var dto = createDto("1", "Test", new BigDecimal("500"), 2.0f, 50.0f,
                 "Testgasse 1, Graz", "https://example.com/1");
 
-        List<ListingScraper> testScrapers = List.of(new TestScraper(Source.WILLHABEN, List.of(dto, dto)));
-        var svc = new ScraperService(testScrapers, repository, null);
+        var svc = new ScraperService(
+                List.of(new TestScraper(Source.WILLHABEN, List.of(dto, dto))), mapper, null);
         svc.fetchAll();
 
-        assertThat(repository.count()).isEqualTo(1);
+        assertThat(mapper.count()).isEqualTo(1);
     }
 
     @Test
@@ -92,17 +96,17 @@ class ScraperServiceTest {
         existing.setTitle("Already saved");
         existing.setAddress("Testgasse 1");
         existing.setUrl("https://example.com/1");
-        repository.save(existing);
+        mapper.insert(existing);
 
         var dto = createDto("1", "Updated title", new BigDecimal("600"), 3.0f, 60.0f,
                 "Testgasse 1, Graz", "https://example.com/1");
 
-        List<ListingScraper> testScrapers = List.of(new TestScraper(Source.GRAWE, List.of(dto)));
-        var svc = new ScraperService(testScrapers, repository, null);
+        var svc = new ScraperService(
+                List.of(new TestScraper(Source.GRAWE, List.of(dto))), mapper, null);
         svc.fetchAll();
 
-        assertThat(repository.count()).isEqualTo(1);
-        Listing found = repository.findByUrl("https://example.com/1").orElseThrow();
+        assertThat(mapper.count()).isEqualTo(1);
+        Listing found = mapper.findByUrl("https://example.com/1").orElseThrow();
         assertThat(found.getTitle()).isEqualTo("Already saved");
     }
 

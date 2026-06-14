@@ -1,34 +1,42 @@
 package org.example.service;
 
 import org.example.entity.Listing;
-import org.example.entity.ListingRepository;
-import org.example.entity.Source;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.example.entity.ListingMapper;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 public class ListingService {
 
-    private final ListingRepository listingRepository;
+    private final ListingMapper listingMapper;
 
-    public ListingService(ListingRepository listingRepository) {
-        this.listingRepository = listingRepository;
+    public ListingService(ListingMapper listingMapper) {
+        this.listingMapper = listingMapper;
     }
 
-    public Page<Listing> findListings(Source source, BigDecimal minPrice, BigDecimal maxPrice,
-                                       Float minRooms, Float minArea, Pageable pageable) {
-        return listingRepository.findAll(ListingSpecs.filter(source, minPrice, maxPrice, minRooms, minArea), pageable);
+    public List<Listing> findListings(String source, BigDecimal minPrice, BigDecimal maxPrice,
+                                       Float minRooms, Float minArea,
+                                       int offset, int limit) {
+        return listingMapper.findAllFiltered(source, minPrice, maxPrice, minRooms, minArea, offset, limit);
+    }
+
+    public long countFiltered(String source, BigDecimal minPrice, BigDecimal maxPrice,
+                               Float minRooms, Float minArea) {
+        return listingMapper.countFiltered(source, minPrice, maxPrice, minRooms, minArea);
     }
 
     public Optional<Listing> findById(Long id) {
-        return listingRepository.findById(id);
+        return listingMapper.findById(id);
     }
 
     public long countAll() {
-        return listingRepository.count();
+        return listingMapper.count();
+    }
+
+    public List<Listing> findAllWithCoords() {
+        return listingMapper.findAllWithCoords();
     }
 }
