@@ -1,0 +1,18 @@
+import { Filters, GeoJsonCollection } from "./types";
+
+const BASE = "/api";
+
+export async function fetchMapListings(filters?: Filters): Promise<GeoJsonCollection> {
+  const params = new URLSearchParams();
+
+  if (filters?.source) params.set("source", filters.source);
+  if (filters?.minPrice != null) params.set("minPrice", String(filters.minPrice));
+  if (filters?.maxPrice != null) params.set("maxPrice", String(filters.maxPrice));
+  if (filters?.minRooms != null) params.set("minRooms", String(filters.minRooms));
+  if (filters?.minArea != null) params.set("minArea", String(filters.minArea));
+
+  const url = `${BASE}/listings/map${params.toString() ? "?" + params.toString() : ""}`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error("Failed to fetch listings");
+  return response.json();
+}
