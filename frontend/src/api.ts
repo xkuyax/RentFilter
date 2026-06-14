@@ -16,3 +16,13 @@ export async function fetchMapListings(filters?: Filters): Promise<GeoJsonCollec
   if (!response.ok) throw new Error("Failed to fetch listings");
   return response.json();
 }
+
+export async function triggerScrape(): Promise<{ status: string }> {
+  const response = await fetch(`${BASE}/admin/scrape`, { method: "POST" });
+  return response.json();
+}
+
+export async function triggerGeocode(): Promise<{ status: string; filled: number }> {
+  const response = await fetch(`${BASE}/admin/geocode`, { method: "POST" });
+  return response.json();
+}
