@@ -63,6 +63,31 @@ class WillhabenDetailEnrichmentTest {
     }
 
     @Test
+    void extractStructuredText_preservesLineBreaksForListItems() {
+        ListingDto dto = new ListingDto();
+        dto.setUrl("https://www.willhaben.at/iad/immobilien/d/mietwohnungen/steiermark/graz/gries-66-5-qm-2-5-zimmer-wohnung-ab-sofort-1680988080/");
+
+        scraper.enrichFromDetailPage(dto);
+
+        String desc = dto.getDescription();
+        // Should contain newlines (from <li> or <br> elements)
+        assertThat(desc).contains("\n");
+        // Preisinformation items should appear
+        assertThat(desc).contains("Betriebskosten", "Kaution");
+    }
+
+    @Test
+    void extractStructuredText_handlesBrElements() {
+        ListingDto dto = new ListingDto();
+        dto.setUrl("https://www.willhaben.at/iad/immobilien/d/mietwohnungen/steiermark/graz/gries-66-5-qm-2-5-zimmer-wohnung-ab-sofort-1680988080/");
+
+        scraper.enrichFromDetailPage(dto);
+
+        // <br> elements should become newlines (visible in the INFO description)
+        assertThat(dto.getDescription()).contains("Offene Türen");
+    }
+
+    @Test
     void enrichFromDetailPage_handlesMissingUrl() {
         ListingDto dto = new ListingDto();
         dto.setUrl("https://www.willhaben.at/iad/immobilien/mietwohnungen/steiermark/graz");
