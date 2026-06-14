@@ -139,7 +139,7 @@ public class WillhabenScraper extends AbstractScraper {
                 String imgUrl = img.path("referenceImageUrl").asText(null);
                 if (imgUrl == null) imgUrl = img.path("mainImageUrl").asText(null);
                 if (imgUrl != null) {
-                    imgUrl = imgUrl.replace("_n.", "."); // strip _n suffix for full resolution
+                    imgUrl = imgUrl.replace("_n.", ".").replace("_hoved.", ".").replace("_thumb.", ".");
                     imageUrls.add(imgUrl);
                 }
             }
