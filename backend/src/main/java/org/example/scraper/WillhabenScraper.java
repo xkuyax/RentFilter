@@ -136,8 +136,8 @@ public class WillhabenScraper extends AbstractScraper {
             List<String> imageUrls = new ArrayList<>();
             JsonNode imgList = ad.path("advertImageList").path("advertImage");
             for (JsonNode img : imgList) {
-                String imgUrl = img.path("mainImageUrl").asText(null);
-                if (imgUrl == null) imgUrl = img.path("referenceImageUrl").asText(null);
+                String imgUrl = img.path("referenceImageUrl").asText(null);
+                if (imgUrl == null) imgUrl = img.path("mainImageUrl").asText(null);
                 if (imgUrl != null) imageUrls.add(imgUrl);
             }
             if (!imageUrls.isEmpty()) dto.setImageUrls(imageUrls);

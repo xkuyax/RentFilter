@@ -87,7 +87,7 @@ class WillhabenScraperTest {
 
         assertThat(dto.getImageUrls()).isNotNull().isNotEmpty();
         for (String url : dto.getImageUrls()) {
-            assertThat(url).startsWith("https://cache.willhaben.at/");
+            assertThat(url).contains("cache.willhaben.at");
         }
     }
 
