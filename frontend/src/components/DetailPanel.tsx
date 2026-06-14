@@ -51,13 +51,13 @@ export default function DetailPanel({ listing: p, onClose }: Props) {
           {images.length > 1 && (
             <>
               <button
-                onClick={() => setImgIdx((i) => (i > 0 ? i - 1 : images.length - 1))}
+                onClick={(e) => { e.stopPropagation(); setImgIdx((i) => (i > 0 ? i - 1 : images.length - 1)); }}
                 className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full w-8 h-8 flex items-center justify-center shadow hover:bg-white"
               >
                 ‹
               </button>
               <button
-                onClick={() => setImgIdx((i) => (i < images.length - 1 ? i + 1 : 0))}
+                onClick={(e) => { e.stopPropagation(); setImgIdx((i) => (i < images.length - 1 ? i + 1 : 0)); }}
                 className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full w-8 h-8 flex items-center justify-center shadow hover:bg-white"
               >
                 ›
