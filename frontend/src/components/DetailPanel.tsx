@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { GeoJsonProperties } from "../types";
+import Lightbox from "./Lightbox";
 
 interface Props {
   listing: GeoJsonProperties;
@@ -26,6 +27,7 @@ export default function DetailPanel({ listing: p, onClose }: Props) {
   const images = parseJsonArray(p.imageUrls);
   const benefits = parseJsonArray(p.benefits);
   const [imgIdx, setImgIdx] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   return (
     <div className="fixed right-0 top-0 h-full w-[400px] max-w-[95vw] bg-white shadow-2xl z-[2000] flex flex-col overflow-y-auto">
@@ -37,7 +39,10 @@ export default function DetailPanel({ listing: p, onClose }: Props) {
       </button>
 
       {images.length > 0 && (
-        <div className="relative w-full h-64 bg-gray-100 flex-shrink-0">
+        <div
+          className="relative w-full h-64 bg-gray-100 flex-shrink-0 cursor-pointer"
+          onClick={() => setLightboxOpen(true)}
+        >
           <img
             src={images[imgIdx]}
             alt=""
@@ -143,6 +148,15 @@ export default function DetailPanel({ listing: p, onClose }: Props) {
           )}
         </div>
       </div>
+      {lightboxOpen && images.length > 0 && (
+        <Lightbox
+          images={images}
+          index={imgIdx}
+          onClose={() => setLightboxOpen(false)}
+          onPrev={() => setImgIdx((i) => (i > 0 ? i - 1 : images.length - 1))}
+          onNext={() => setImgIdx((i) => (i < images.length - 1 ? i + 1 : 0))}
+        />
+      )}
     </div>
   );
 }
