@@ -1,16 +1,22 @@
 import { Filters } from "../types";
+import AddressSearch from "./AddressSearch";
 
 interface Props {
   filters: Filters;
   onChange: (filters: Filters) => void;
+  onSearchResult: (lat: number, lng: number) => void;
 }
 
 const SOURCES = ["WILLHABEN", "GENOSSENSCHAFTEN", "GRAWE"];
 
-export default function FilterSidebar({ filters, onChange }: Props) {
+export default function FilterSidebar({ filters, onChange, onSearchResult }: Props) {
   return (
     <div className="w-72 bg-white shadow-lg p-4 overflow-y-auto flex flex-col gap-3">
-      <h2 className="text-lg font-semibold">Filters</h2>
+      <h2 className="text-lg font-semibold">RentFilter</h2>
+
+      <AddressSearch onResult={onSearchResult} />
+
+      <hr className="border-gray-200" />
 
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-1">Source</label>

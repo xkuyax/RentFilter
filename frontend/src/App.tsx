@@ -6,16 +6,25 @@ import { Filters } from "./types";
 
 function App() {
   const [filters, setFilters] = useState<Filters>({});
+  const [center, setCenter] = useState<[number, number] | null>(null);
 
   const handleFilterChange = useCallback((newFilters: Filters) => {
     setFilters(newFilters);
   }, []);
 
+  const handleSearchResult = useCallback((lat: number, lng: number) => {
+    setCenter([lat, lng]);
+  }, []);
+
   return (
     <div className="flex w-full h-full">
-      <FilterSidebar filters={filters} onChange={handleFilterChange} />
+      <FilterSidebar
+        filters={filters}
+        onChange={handleFilterChange}
+        onSearchResult={handleSearchResult}
+      />
       <div className="flex-1 relative">
-        <MapView filters={filters} />
+        <MapView filters={filters} center={center} />
         <AdminPanel />
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import { GeoJsonFeature, Filters } from "../types";
 import { fetchMapListings } from "../api";
@@ -29,11 +29,22 @@ function getIcon(source: string): L.DivIcon {
   return SOURCE_ICONS[source];
 }
 
-interface Props {
-  filters: Filters;
+function FlyToCenter({ center }: { center: [number, number] | null }) {
+  const map = useMap();
+  useEffect(() => {
+    if (center) {
+      map.flyTo(center, 16);
+    }
+  }, [center, map]);
+  return null;
 }
 
-export default function MapView({ filters }: Props) {
+interface Props {
+  filters: Filters;
+  center: [number, number] | null;
+}
+
+export default function MapView({ filters, center }: Props) {
   const [features, setFeatures] = useState<GeoJsonFeature[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -81,6 +92,7 @@ export default function MapView({ filters }: Props) {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        <FlyToCenter center={center} />
         {features.map((f) => (
           <Marker
             key={f.properties.id}
