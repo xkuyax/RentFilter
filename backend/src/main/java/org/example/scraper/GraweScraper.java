@@ -95,6 +95,7 @@ public class GraweScraper extends AbstractScraper {
     private String buildFormBody(int page) {
         return "action=" + enc("filter_properties")
                 + "&property_type=" + enc("Wohnung")
+                + "&locations=" + enc("[{\"city\":\"Graz\"}]")
                 + "&paged=" + page
                 + "&posts_per_page=18";
     }
