@@ -38,14 +38,11 @@ public class GenossenschaftenScraper extends AbstractScraper {
         int totalPages = 1;
 
         while (page <= totalPages) {
-            if (page > 1) {
-                Thread.sleep(requestDelayMs);
-            }
-
             String url = page == 1 ? LIST_URL : LIST_URL + page + "/";
             log.info("Genossenschaften: fetching page {}/{}", page, totalPages);
 
-            Document doc = fetch(url, Map.of("X-Requested-With", "XMLHttpRequest"));
+            FetchResult fr = fetch(url, Map.of("X-Requested-With", "XMLHttpRequest"));
+            Document doc = fr.document();
 
             if (page == 1) {
                 Element pagination = doc.selectFirst("#residence-pagination-top .pagination");
@@ -69,13 +66,16 @@ public class GenossenschaftenScraper extends AbstractScraper {
 
             if (page >= totalPages) break;
             page++;
+            if (!fr.cached()) Thread.sleep(requestDelayMs);
         }
 
         log.info("Genossenschaften: {} listings found across {} pages", results.size(), totalPages);
 
+        boolean previousCached = true;
         for (ListingDto dto : results) {
-            enrichFromDetailPage(dto);
-            if (!isCacheEnabled()) Thread.sleep(requestDelayMs);
+            boolean cached = enrichAndReturnCached(dto);
+            if (!cached && !previousCached) Thread.sleep(requestDelayMs);
+            previousCached = cached;
         }
 
         return results;
@@ -158,10 +158,15 @@ public class GenossenschaftenScraper extends AbstractScraper {
     }
 
     void enrichFromDetailPage(ListingDto dto) {
+        enrichAndReturnCached(dto);
+    }
+
+    boolean enrichAndReturnCached(ListingDto dto) {
         try {
-            Document detail = fetch(dto.getUrl());
+            FetchResult result = fetch(dto.getUrl());
+            Document detail = result.document();
             Element script = detail.selectFirst("script[type=\"application/ld+json\"]");
-            if (script == null) return;
+            if (script == null) return false;
 
             JsonNode json = objectMapper.readTree(script.data());
             // Schema.org Apartment type
@@ -215,8 +220,10 @@ public class GenossenschaftenScraper extends AbstractScraper {
             }
             if (!images.isEmpty()) dto.setImageUrls(images);
 
+            return result.cached();
         } catch (Exception e) {
             log.warn("Genossenschaften: failed to enrich {}", dto.getUrl(), e);
+            return false;
         }
     }
 

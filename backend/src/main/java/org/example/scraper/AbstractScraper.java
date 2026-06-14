@@ -29,17 +29,16 @@ public abstract class AbstractScraper implements ListingScraper {
 
     private final Random random = new Random();
 
-    protected Document fetch(String url) throws Exception {
+    protected FetchResult fetch(String url) throws Exception {
         return fetch(url, Map.of());
     }
 
-    protected Document fetch(String url, Map<String, String> headers) throws Exception {
+    protected FetchResult fetch(String url, Map<String, String> headers) throws Exception {
+        String cacheKey = url + "|" + headers.hashCode();
         if (cache != null && cache.isEnabled()) {
-            String key = url + "|" + headers.hashCode();
-            String cached = cache.get(key);
+            String cached = cache.get(cacheKey);
             if (cached != null) {
-                log.debug("Cache hit for {}", url);
-                return Jsoup.parse(cached);
+                return new FetchResult(Jsoup.parse(cached), true);
             }
         }
 
@@ -57,7 +56,7 @@ public abstract class AbstractScraper implements ListingScraper {
             cache.put(key, doc.outerHtml());
         }
 
-        return doc;
+        return new FetchResult(doc, false);
     }
 
     protected String parsePrice(String text) {

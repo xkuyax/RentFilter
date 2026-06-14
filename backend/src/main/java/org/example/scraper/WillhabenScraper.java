@@ -37,12 +37,11 @@ public class WillhabenScraper extends AbstractScraper {
         int totalPages = 1;
 
         while (page <= totalPages) {
-            if (page > 1) Thread.sleep(requestDelayMs);
-
             String url = SEARCH_URL + "?page=" + page + "&rows=30";
             log.info("Willhaben: fetching page {}/{}", page, totalPages);
 
-            Document doc = fetch(url);
+            FetchResult fr = fetch(url);
+            Document doc = fr.document();
 
             JsonNode root = extractJson(doc);
             if (root == null) {
@@ -72,6 +71,7 @@ public class WillhabenScraper extends AbstractScraper {
 
             if (page >= totalPages) break;
             page++;
+            if (!fr.cached()) Thread.sleep(requestDelayMs);
         }
 
         log.info("Willhaben: {} listings parsed across {} pages", results.size(), totalPages);

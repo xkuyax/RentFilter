@@ -93,9 +93,11 @@ public class GraweScraper extends AbstractScraper {
 
         log.info("Grawe: {} listings found across {} pages", results.size(), totalPages);
 
+        boolean previousCached = true;
         for (ListingDto dto : results) {
-            enrichFromDetailPage(dto);
-            if (!isCacheEnabled()) Thread.sleep(requestDelayMs);
+            boolean cached = enrichAndReturnCached(dto);
+            if (!cached && !previousCached) Thread.sleep(requestDelayMs);
+            previousCached = cached;
         }
 
         return results;
@@ -168,8 +170,13 @@ public class GraweScraper extends AbstractScraper {
     }
 
     void enrichFromDetailPage(ListingDto dto) {
+        enrichAndReturnCached(dto);
+    }
+
+    boolean enrichAndReturnCached(ListingDto dto) {
         try {
-            Document detail = fetch(dto.getUrl());
+            FetchResult result = fetch(dto.getUrl());
+            Document detail = result.document();
 
             dto.setAddress(extractAddressFromTitle(detail.title()));
             extractImages(detail, dto);
@@ -179,8 +186,10 @@ public class GraweScraper extends AbstractScraper {
             extractEnergyInfo(detail, dto);
             extract360View(detail, dto);
 
+            return result.cached();
         } catch (Exception e) {
             log.warn("Grawe: failed to enrich detail page {}", dto.getUrl(), e);
+            return false;
         }
     }
 
