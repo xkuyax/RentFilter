@@ -110,6 +110,11 @@
         WHERE id = #{id}
     </update>
 
+    <update id="updateImages">
+        UPDATE listings SET image_urls = #{imageUrls}, thumbnail_url = #{thumbnailUrl}
+        WHERE id = #{id}
+    </update>
+
     <delete id="deleteAll">
         DELETE FROM listings
     </delete>

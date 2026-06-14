@@ -66,6 +66,7 @@ public class ScraperService {
         Optional<Listing> existing = listingMapper.findByUrl(dto.getUrl());
         if (existing.isPresent()) {
             Listing ex = existing.get();
+            // Update coordinates if missing
             if ((ex.getLatitude() == null || ex.getLongitude() == null)
                     && geocodingService != null) {
                 var coords = geocodingService.geocode(ex.getAddress());
@@ -74,6 +75,16 @@ public class ScraperService {
                     ex.setLongitude(coords.lng());
                     listingMapper.updateCoordinates(ex);
                 }
+            }
+            // Update images if existing ones contain low-res suffixes
+            String newImages = toJson(dto.getImageUrls());
+            if (newImages != null && (ex.getImageUrls() == null
+                    || ex.getImageUrls().contains("_hoved")
+                    || ex.getImageUrls().contains("_n.")
+                    || ex.getImageUrls().contains("_thumb"))) {
+                ex.setImageUrls(newImages);
+                ex.setThumbnailUrl(dto.getThumbnailUrl());
+                listingMapper.updateImages(ex);
             }
             return false;
         }
