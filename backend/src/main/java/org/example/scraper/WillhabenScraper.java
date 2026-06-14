@@ -3,7 +3,6 @@ package org.example.scraper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.entity.Source;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Component;
 
@@ -43,11 +42,7 @@ public class WillhabenScraper extends AbstractScraper {
             String url = SEARCH_URL + "?page=" + page + "&rows=30";
             log.info("Willhaben: fetching page {}/{}", page, totalPages);
 
-            Document doc = Jsoup.connect(url)
-                    .userAgent(userAgent)
-                    .header("Accept", "text/html")
-                    .timeout(30_000)
-                    .get();
+            Document doc = fetch(url);
 
             JsonNode root = extractJson(doc);
             if (root == null) {

@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.util.Map;
 import java.util.Random;
 
 public abstract class AbstractScraper implements ListingScraper {
@@ -29,8 +30,13 @@ public abstract class AbstractScraper implements ListingScraper {
     private final Random random = new Random();
 
     protected Document fetch(String url) throws Exception {
+        return fetch(url, Map.of());
+    }
+
+    protected Document fetch(String url, Map<String, String> headers) throws Exception {
         if (cache != null && cache.isEnabled()) {
-            String cached = cache.get(url);
+            String key = url + "|" + headers.hashCode();
+            String cached = cache.get(key);
             if (cached != null) {
                 log.debug("Cache hit for {}", url);
                 return Jsoup.parse(cached);
@@ -38,13 +44,17 @@ public abstract class AbstractScraper implements ListingScraper {
         }
 
         Thread.sleep(requestDelayMs + random.nextInt(1000));
-        Document doc = Jsoup.connect(url)
+        var conn = Jsoup.connect(url)
                 .userAgent(userAgent)
-                .timeout(30_000)
-                .get();
+                .timeout(30_000);
+        for (var entry : headers.entrySet()) {
+            conn.header(entry.getKey(), entry.getValue());
+        }
+        Document doc = conn.get();
 
         if (cache != null && cache.isEnabled()) {
-            cache.put(url, doc.outerHtml());
+            String key = url + "|" + headers.hashCode();
+            cache.put(key, doc.outerHtml());
         }
 
         return doc;

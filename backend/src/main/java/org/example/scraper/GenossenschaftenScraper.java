@@ -3,7 +3,6 @@ package org.example.scraper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.entity.Source;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Component;
@@ -11,6 +10,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,11 +45,7 @@ public class GenossenschaftenScraper extends AbstractScraper {
             String url = page == 1 ? LIST_URL : LIST_URL + page + "/";
             log.info("Genossenschaften: fetching page {}/{}", page, totalPages);
 
-            Document doc = Jsoup.connect(url)
-                    .userAgent(userAgent)
-                    .header("X-Requested-With", "XMLHttpRequest")
-                    .timeout(30_000)
-                    .get();
+            Document doc = fetch(url, Map.of("X-Requested-With", "XMLHttpRequest"));
 
             if (page == 1) {
                 Element pagination = doc.selectFirst("#residence-pagination-top .pagination");
