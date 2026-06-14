@@ -92,6 +92,23 @@ class WillhabenScraperTest {
     }
 
     @Test
+    void parseAd_imageUrlsDontContainThumbnails() {
+        JsonNode ads = jsonRoot.path("props").path("pageProps")
+                .path("searchResult").path("advertSummaryList").path("advertSummary");
+
+        for (JsonNode ad : ads) {
+            ListingDto dto = scraper.parseAd(ad);
+            if (dto.getImageUrls() == null || dto.getImageUrls().isEmpty()) continue;
+
+            for (String url : dto.getImageUrls()) {
+                assertThat(url.toLowerCase())
+                        .as("Image URL should not be a thumbnail: " + url)
+                        .doesNotContain("thumb");
+            }
+        }
+    }
+
+    @Test
     void parseAd_extractsAreaAndRooms() {
         JsonNode ads = jsonRoot.path("props").path("pageProps")
                 .path("searchResult").path("advertSummaryList").path("advertSummary");
