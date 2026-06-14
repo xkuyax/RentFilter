@@ -6,7 +6,11 @@ import DetailPanel from "./components/DetailPanel";
 import { Filters, GeoJsonProperties } from "./types";
 
 function App() {
-  const [filters, setFilters] = useState<Filters>({});
+  const [filters, setFilters] = useState<Filters>({
+    maxPrice: 1000,
+    minRooms: 3,
+    minArea: 50,
+  });
   const [center, setCenter] = useState<[number, number] | null>(null);
   const [selected, setSelected] = useState<GeoJsonProperties | null>(null);
 
