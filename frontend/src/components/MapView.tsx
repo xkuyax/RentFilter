@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from "react-leaflet";
 import L from "leaflet";
 import { GeoJsonFeature, Filters } from "../types";
 import { fetchMapListings } from "../api";
@@ -8,6 +8,14 @@ import ListingPopup from "./ListingPopup";
 const GRAZ_CENTER: [number, number] = [47.0707, 15.4395];
 
 const SOURCE_ICONS: Record<string, L.DivIcon> = {};
+
+const searchIcon = L.divIcon({
+  html: `<div style="background:#e63946;width:20px;height:20px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.5)"></div>`,
+  className: "",
+  iconSize: [20, 20],
+  iconAnchor: [10, 10],
+  popupAnchor: [0, -10],
+});
 
 function getIcon(source: string): L.DivIcon {
   if (SOURCE_ICONS[source]) return SOURCE_ICONS[source];
@@ -93,6 +101,20 @@ export default function MapView({ filters, center }: Props) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <FlyToCenter center={center} />
+        {center && (
+          <>
+            <Circle
+              center={center}
+              pathOptions={{ className: "search-pulse-ring" }}
+              radius={1}
+            />
+            <Marker position={center} icon={searchIcon}>
+              <Popup>
+                <div className="text-sm font-medium">Search result</div>
+              </Popup>
+            </Marker>
+          </>
+        )}
         {features.map((f) => (
           <Marker
             key={f.properties.id}
