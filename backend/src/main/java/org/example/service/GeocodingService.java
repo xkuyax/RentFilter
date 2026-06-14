@@ -34,30 +34,51 @@ public class GeocodingService {
     public record Coords(double lat, double lng) {}
 
     public Coords geocode(String address) {
-        try {
-            rateLimit();
-            String encoded = URLEncoder.encode(address, StandardCharsets.UTF_8);
-            var request = HttpRequest.newBuilder()
-                    .uri(URI.create(NOMINATIM_URL.formatted(encoded)))
-                    .header("User-Agent", userAgent)
-                    .GET()
-                    .build();
+        for (int attempt = 0; attempt < 3; attempt++) {
+            try {
+                rateLimit();
+                String encoded = URLEncoder.encode(address, StandardCharsets.UTF_8);
+                var request = HttpRequest.newBuilder()
+                        .uri(URI.create(NOMINATIM_URL.formatted(encoded)))
+                        .header("User-Agent", userAgent)
+                        .GET()
+                        .build();
 
-            var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() != 200) {
-                log.warn("Nominatim returned status {} for address: {}", response.statusCode(), address);
+                var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+                if (response.statusCode() == 429) {
+                    log.warn("Nominatim 429, sleeping 60s...");
+                    Thread.sleep(60_000);
+                    continue;
+                }
+
+                if (response.statusCode() != 200) {
+                    log.warn("Nominatim returned status {} for address: {}", response.statusCode(), address);
+                    return null;
+                }
+
+                String body = response.body();
+                if (body.startsWith("<")) {
+                    log.warn("Nominatim returned HTML instead of JSON (likely rate limited)");
+                    Thread.sleep(60_000);
+                    continue;
+                }
+
+                JsonNode root = mapper.readTree(body);
+                if (root.isArray() && !root.isEmpty()) {
+                    JsonNode first = root.get(0);
+                    double lat = first.get("lat").asDouble();
+                    double lng = first.get("lon").asDouble();
+                    return new Coords(lat, lng);
+                }
+                return null;
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return null;
+            } catch (Exception e) {
+                log.warn("Geocoding failed for address: {}", address, e);
                 return null;
             }
-
-            JsonNode root = mapper.readTree(response.body());
-            if (root.isArray() && !root.isEmpty()) {
-                JsonNode first = root.get(0);
-                double lat = first.get("lat").asDouble();
-                double lng = first.get("lon").asDouble();
-                return new Coords(lat, lng);
-            }
-        } catch (Exception e) {
-            log.warn("Geocoding failed for address: {}", address, e);
         }
         return null;
     }
