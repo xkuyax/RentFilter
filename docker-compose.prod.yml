@@ -1,0 +1,26 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: rentfilter-db
+    environment:
+      POSTGRES_DB: rentfilter
+      POSTGRES_USER: rentfilter
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-rentfilter}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/rentfilter
+      SPRING_DATASOURCE_USERNAME: rentfilter
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-rentfilter}
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+volumes:
+  pgdata:

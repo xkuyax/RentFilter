@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: rentfilter-db
+    environment:
+      POSTGRES_DB: rentfilter
+      POSTGRES_USER: rentfilter
+      POSTGRES_PASSWORD: rentfilter
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
