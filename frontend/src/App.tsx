@@ -2,11 +2,13 @@ import { useState, useCallback } from "react";
 import MapView from "./components/MapView";
 import FilterSidebar from "./components/FilterSidebar";
 import AdminPanel from "./components/AdminPanel";
-import { Filters } from "./types";
+import DetailPanel from "./components/DetailPanel";
+import { Filters, GeoJsonProperties } from "./types";
 
 function App() {
   const [filters, setFilters] = useState<Filters>({});
   const [center, setCenter] = useState<[number, number] | null>(null);
+  const [selected, setSelected] = useState<GeoJsonProperties | null>(null);
 
   const handleFilterChange = useCallback((newFilters: Filters) => {
     setFilters(newFilters);
@@ -24,9 +26,16 @@ function App() {
         onSearchResult={handleSearchResult}
       />
       <div className="flex-1 relative">
-        <MapView filters={filters} center={center} />
+        <MapView
+          filters={filters}
+          center={center}
+          onSelectListing={setSelected}
+        />
         <AdminPanel />
       </div>
+      {selected && (
+        <DetailPanel listing={selected} onClose={() => setSelected(null)} />
+      )}
     </div>
   );
 }

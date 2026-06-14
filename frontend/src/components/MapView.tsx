@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from "react-leaflet";
 import L from "leaflet";
-import { GeoJsonFeature, Filters } from "../types";
+import { GeoJsonFeature, Filters, GeoJsonProperties } from "../types";
 import { fetchMapListings } from "../api";
-import ListingPopup from "./ListingPopup";
 
 const GRAZ_CENTER: [number, number] = [47.0707, 15.4395];
 
@@ -50,9 +49,10 @@ function FlyToCenter({ center }: { center: [number, number] | null }) {
 interface Props {
   filters: Filters;
   center: [number, number] | null;
+  onSelectListing: (listing: GeoJsonProperties) => void;
 }
 
-export default function MapView({ filters, center }: Props) {
+export default function MapView({ filters, center, onSelectListing }: Props) {
   const [features, setFeatures] = useState<GeoJsonFeature[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -120,11 +120,8 @@ export default function MapView({ filters, center }: Props) {
             key={f.properties.id}
             position={[f.geometry.coordinates[1], f.geometry.coordinates[0]]}
             icon={getIcon(f.properties.source)}
-          >
-            <Popup>
-              <ListingPopup feature={f} />
-            </Popup>
-          </Marker>
+            eventHandlers={{ click: () => onSelectListing(f.properties) }}
+          />
         ))}
       </MapContainer>
     </div>
