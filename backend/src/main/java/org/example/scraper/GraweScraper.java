@@ -88,17 +88,21 @@ public class GraweScraper extends AbstractScraper {
 
             if (page >= totalPages) break;
             page++;
-            Thread.sleep(requestDelayMs);
+            if (!isCacheEnabled()) Thread.sleep(requestDelayMs);
         }
 
         log.info("Grawe: {} listings found across {} pages", results.size(), totalPages);
 
         for (ListingDto dto : results) {
             enrichFromDetailPage(dto);
-            Thread.sleep(requestDelayMs);
+            if (!isCacheEnabled()) Thread.sleep(requestDelayMs);
         }
 
         return results;
+    }
+
+    private boolean isCacheEnabled() {
+        return cache != null && cache.isEnabled();
     }
 
     private String buildFormBody(int page) {

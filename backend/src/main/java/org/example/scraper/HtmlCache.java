@@ -21,7 +21,7 @@ public class HtmlCache {
     @Value("${scraping.cache.enabled:true}")
     private boolean enabled;
 
-    private final Path cacheDir = Path.of("data", "html-cache");
+    private final Path cacheDir = Path.of(System.getProperty("user.dir"), "data", "html-cache");
 
     public boolean isEnabled() {
         return enabled;
