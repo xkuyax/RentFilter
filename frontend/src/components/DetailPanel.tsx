@@ -83,7 +83,7 @@ export default function DetailPanel({ listing: p, onClose }: Props) {
 
         <div className="grid grid-cols-2 gap-2 text-sm">
           {p.rooms != null && <Row label="Rooms" value={String(p.rooms)} />}
-          {p.area != null && <Row label="Area" value={p.area + " m²"} />}
+          {p.area != null && <Row label="Area" value={p.area + " m²" + (p.pricePerSqm != null ? " (€" + p.pricePerSqm.toFixed(0) + "/m²)" : "")} />}
           {p.buildYear && <Row label="Year built" value={String(p.buildYear)} />}
           {p.availableFrom && <Row label="Available" value={p.availableFrom} />}
           {p.heatingDemand != null && <Row label="Heating" value={p.heatingDemand + " kWh/m²a"} />}

@@ -38,7 +38,8 @@ public interface ListingMapper {
                                             @Param("minPrice") BigDecimal minPrice,
                                             @Param("maxPrice") BigDecimal maxPrice,
                                             @Param("minRooms") Float minRooms,
-                                            @Param("minArea") Float minArea);
+                                            @Param("minArea") Float minArea,
+                                            @Param("maxPricePerSqm") Float maxPricePerSqm);
 
     int insert(Listing listing);
 

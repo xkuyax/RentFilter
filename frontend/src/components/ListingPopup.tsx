@@ -79,6 +79,9 @@ export default function ListingPopup({ feature }: Props) {
           <div>
             <span className="font-medium">Area: </span>
             {p.area} m²
+            {p.pricePerSqm != null && (
+              <span className="text-gray-400"> (€{p.pricePerSqm.toFixed(0)}/m²)</span>
+            )}
           </div>
         )}
         <div>

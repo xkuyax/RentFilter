@@ -94,6 +94,21 @@ export default function FilterSidebar({ filters, onChange, onSearchResult }: Pro
           }
         />
       </div>
+
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          Max €/m²
+        </label>
+        <input
+          type="number"
+          className="w-full border rounded px-2 py-1 text-sm"
+          placeholder="∞"
+          value={filters.maxPricePerSqm ?? ""}
+          onChange={(e) =>
+            onChange({ ...filters, maxPricePerSqm: e.target.value ? Number(e.target.value) : undefined })
+          }
+        />
+      </div>
     </div>
   );
 }

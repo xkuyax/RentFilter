@@ -61,6 +61,7 @@
         <if test="maxPrice != null">AND price &lt;= #{maxPrice}</if>
         <if test="minRooms != null">AND rooms &gt;= #{minRooms}</if>
         <if test="minArea != null">AND area_sqm &gt;= #{minArea}</if>
+        <if test="maxPricePerSqm != null">AND price / NULLIF(area_sqm, 0) &lt;= #{maxPricePerSqm}</if>
         ORDER BY created_at DESC
     </select>
 

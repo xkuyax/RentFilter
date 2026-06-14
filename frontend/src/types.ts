@@ -52,6 +52,16 @@ export interface GeoJsonProperties {
   has360View: boolean;
   matterportUrl: string | null;
   description: string | null;
+  pricePerSqm: number | null;
+}
+
+export interface Filters {
+  source?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  minRooms?: number;
+  minArea?: number;
+  maxPricePerSqm?: number;
 }
 
 export interface GeoJsonFeature {
@@ -66,12 +76,4 @@ export interface GeoJsonFeature {
 export interface GeoJsonCollection {
   type: "FeatureCollection";
   features: GeoJsonFeature[];
-}
-
-export interface Filters {
-  source?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  minRooms?: number;
-  minArea?: number;
 }

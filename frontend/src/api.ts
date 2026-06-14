@@ -10,6 +10,7 @@ export async function fetchMapListings(filters?: Filters): Promise<GeoJsonCollec
   if (filters?.maxPrice != null) params.set("maxPrice", String(filters.maxPrice));
   if (filters?.minRooms != null) params.set("minRooms", String(filters.minRooms));
   if (filters?.minArea != null) params.set("minArea", String(filters.minArea));
+  if (filters?.maxPricePerSqm != null) params.set("maxPricePerSqm", String(filters.maxPricePerSqm));
 
   const url = `${BASE}/listings/map${params.toString() ? "?" + params.toString() : ""}`;
   const response = await fetch(url);

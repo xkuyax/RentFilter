@@ -56,10 +56,11 @@ public class ListingController {
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) Float minRooms,
-            @RequestParam(required = false) Float minArea) {
+            @RequestParam(required = false) Float minArea,
+            @RequestParam(required = false) Float maxPricePerSqm) {
         String src = source != null ? source.name() : null;
         List<Listing> listings = listingService.findAllFilteredWithCoords(
-                src, minPrice, maxPrice, minRooms, minArea);
+                src, minPrice, maxPrice, minRooms, minArea, maxPricePerSqm);
         List<Map<String, Object>> features = listings
                 .stream()
                 .map(this::toGeoJsonFeature)
@@ -99,6 +100,7 @@ public class ListingController {
         properties.put("has360View", listing.isHas360View());
         properties.put("matterportUrl", listing.getMatterportUrl());
         properties.put("description", listing.getDescription());
+        properties.put("pricePerSqm", listing.getPricePerSqm());
 
         feature.put("geometry", Map.of("type", "Point", "coordinates",
                 new double[]{listing.getLongitude(), listing.getLatitude()}));

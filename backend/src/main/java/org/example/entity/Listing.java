@@ -118,4 +118,9 @@ public class Listing {
 
     public String getMatterportUrl() { return matterportUrl; }
     public void setMatterportUrl(String matterportUrl) { this.matterportUrl = matterportUrl; }
+
+    public Float getPricePerSqm() {
+        if (price == null || area == null || area == 0) return null;
+        return price.floatValue() / area;
+    }
 }
