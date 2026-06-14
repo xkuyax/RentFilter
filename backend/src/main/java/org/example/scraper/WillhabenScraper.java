@@ -217,9 +217,13 @@ public class WillhabenScraper extends AbstractScraper {
                     el = doc.selectFirst("[data-testid*=" + heading + "]");
                 }
                 if (el != null) {
-                    Element container = el.parent();
-                    if (container != null && container.wholeText().trim().length() > heading.length() + 5) {
-                        fullText.append(container.wholeText().trim()).append("\n\n");
+                    // Get the NEXT sibling's text (actual content, not the heading itself)
+                    Element next = el.nextElementSibling();
+                    if (next != null) {
+                        String text = next.wholeText().trim();
+                        if (text.length() > 5) {
+                            fullText.append(text).append("\n\n");
+                        }
                     }
                 }
             }

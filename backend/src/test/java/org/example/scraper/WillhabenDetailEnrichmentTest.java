@@ -43,18 +43,23 @@ class WillhabenDetailEnrichmentTest {
 
         assertThat(cached).isTrue();
         assertThat(dto.getDescription()).isNotNull().isNotBlank();
-        assertThat(dto.getDescription()).contains("Objektbeschreibung");
+        // Should contain content, not section headings
         assertThat(dto.getDescription()).contains("INFO:");
+        assertThat(dto.getDescription()).contains("Offene Türen");
+        assertThat(dto.getDescription()).doesNotContain("Objektbeschreibung");
     }
 
     @Test
-    void enrichFromDetailPage_extractsObjektinformationen() {
+    void enrichFromDetailPage_extractsContentText() {
         ListingDto dto = new ListingDto();
         dto.setUrl("https://www.willhaben.at/iad/immobilien/d/mietwohnungen/steiermark/graz/gries-66-5-qm-2-5-zimmer-wohnung-ab-sofort-1680988080/");
 
         scraper.enrichFromDetailPage(dto);
 
-        assertThat(dto.getDescription()).contains("Wohnung");
+        // Content text from sections should be present
+        assertThat(dto.getDescription()).contains("Zimmer");
+        // But page section headings should not be in the description
+        assertThat(dto.getDescription()).doesNotContain("Objektinformationen");
     }
 
     @Test
