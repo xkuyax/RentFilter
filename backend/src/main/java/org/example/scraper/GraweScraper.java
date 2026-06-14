@@ -50,15 +50,24 @@ public class GraweScraper extends AbstractScraper {
             log.info("Grawe: fetching page {}/{}", page, totalPages);
 
             String formBody = buildFormBody(page);
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(AJAX_URL))
-                    .header("Content-Type", "application/x-www-form-urlencoded")
-                    .header("User-Agent", userAgent)
-                    .POST(HttpRequest.BodyPublishers.ofString(formBody))
-                    .build();
+            String cacheKey = AJAX_URL + "?" + formBody;
+            String responseBody;
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            JsonNode json = objectMapper.readTree(response.body());
+            if (cache != null && cache.isEnabled()) {
+                String cached = cache.get(cacheKey);
+                if (cached != null) {
+                    responseBody = cached;
+                } else {
+                    responseBody = httpClient.send(buildAjaxRequest(formBody),
+                            HttpResponse.BodyHandlers.ofString()).body();
+                    cache.put(cacheKey, responseBody);
+                }
+            } else {
+                responseBody = httpClient.send(buildAjaxRequest(formBody),
+                        HttpResponse.BodyHandlers.ofString()).body();
+            }
+
+            JsonNode json = objectMapper.readTree(responseBody);
 
             if (!json.path("success").asBoolean()) {
                 log.warn("Grawe: API returned success=false on page {}", page);
@@ -98,6 +107,15 @@ public class GraweScraper extends AbstractScraper {
                 + "&locations=" + enc("[{\"city\":\"Graz\"}]")
                 + "&paged=" + page
                 + "&posts_per_page=18";
+    }
+
+    private HttpRequest buildAjaxRequest(String formBody) {
+        return HttpRequest.newBuilder()
+                .uri(URI.create(AJAX_URL))
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .header("User-Agent", userAgent)
+                .POST(HttpRequest.BodyPublishers.ofString(formBody))
+                .build();
     }
 
     private String enc(String value) {

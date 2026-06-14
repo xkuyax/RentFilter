@@ -36,3 +36,8 @@ tasks.register<JavaExec>("debugScrape") {
     mainClass = "org.example.debug.ScraperDebugger"
     args = listOf(project.findProperty("url")?.toString() ?: "https://www.grawewohnen.at/")
 }
+
+tasks.register<JavaExec>("populateCache") {
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass = "org.example.debug.PopulateCache"
+}
