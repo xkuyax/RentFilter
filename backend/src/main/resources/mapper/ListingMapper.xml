@@ -53,6 +53,17 @@
         SELECT * FROM listings WHERE latitude IS NOT NULL AND longitude IS NOT NULL
     </select>
 
+    <select id="findAllFilteredWithCoords" resultMap="listingMap">
+        SELECT * FROM listings
+        WHERE latitude IS NOT NULL AND longitude IS NOT NULL
+        <if test="source != null">AND source = #{source}</if>
+        <if test="minPrice != null">AND price &gt;= #{minPrice}</if>
+        <if test="maxPrice != null">AND price &lt;= #{maxPrice}</if>
+        <if test="minRooms != null">AND rooms &gt;= #{minRooms}</if>
+        <if test="minArea != null">AND area_sqm &gt;= #{minArea}</if>
+        ORDER BY created_at DESC
+    </select>
+
     <select id="countFiltered" resultType="long">
         SELECT COUNT(*) FROM listings
         <where>

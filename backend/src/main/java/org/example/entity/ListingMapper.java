@@ -34,6 +34,12 @@ public interface ListingMapper {
 
     List<Listing> findAllWithCoords();
 
+    List<Listing> findAllFilteredWithCoords(@Param("source") String source,
+                                            @Param("minPrice") BigDecimal minPrice,
+                                            @Param("maxPrice") BigDecimal maxPrice,
+                                            @Param("minRooms") Float minRooms,
+                                            @Param("minArea") Float minArea);
+
     int insert(Listing listing);
 
     int updateCoordinates(Listing listing);

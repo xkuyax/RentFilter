@@ -51,8 +51,16 @@ public class ListingController {
     }
 
     @GetMapping("/map")
-    public Map<String, Object> getMapListings() {
-        List<Map<String, Object>> features = listingService.findAllWithCoords()
+    public Map<String, Object> getMapListings(
+            @RequestParam(required = false) Source source,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) Float minRooms,
+            @RequestParam(required = false) Float minArea) {
+        String src = source != null ? source.name() : null;
+        List<Listing> listings = listingService.findAllFilteredWithCoords(
+                src, minPrice, maxPrice, minRooms, minArea);
+        List<Map<String, Object>> features = listings
                 .stream()
                 .map(this::toGeoJsonFeature)
                 .toList();
