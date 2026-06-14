@@ -123,7 +123,7 @@ public class GeocodingService {
         return filled;
     }
 
-    private void rateLimit() {
+    private synchronized void rateLimit() {
         long elapsed = Instant.now().toEpochMilli() - lastRequest.toEpochMilli();
         if (elapsed < 1100) {
             try {

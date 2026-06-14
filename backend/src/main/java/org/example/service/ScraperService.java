@@ -9,10 +9,12 @@ import org.example.scraper.ListingDto;
 import org.example.scraper.ListingScraper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class ScraperService {
@@ -33,21 +35,30 @@ public class ScraperService {
     }
 
     public void fetchAll() {
-        for (ListingScraper scraper : scrapers) {
-            try {
-                log.info("Running scraper: {}", scraper.getSource());
-                List<ListingDto> dtos = scraper.scrape();
-                int saved = 0;
-                for (ListingDto dto : dtos) {
-                    if (saveOrUpdate(scraper.getSource(), dto)) {
-                        saved++;
-                    }
+        if (scrapers.size() <= 1) {
+            scrapers.forEach(this::runScraper);
+            return;
+        }
+        var futures = scrapers.stream()
+                .map(s -> CompletableFuture.runAsync(() -> runScraper(s)))
+                .toArray(CompletableFuture[]::new);
+        CompletableFuture.allOf(futures).join();
+    }
+
+    private void runScraper(ListingScraper scraper) {
+        try {
+            log.info("Running scraper: {}", scraper.getSource());
+            List<ListingDto> dtos = scraper.scrape();
+            int saved = 0;
+            for (ListingDto dto : dtos) {
+                if (saveOrUpdate(scraper.getSource(), dto)) {
+                    saved++;
                 }
-                log.info("{}: {} new/updated listings out of {} fetched",
-                        scraper.getSource(), saved, dtos.size());
-            } catch (Exception e) {
-                log.error("Scraper {} failed", scraper.getSource(), e);
             }
+            log.info("{}: {} new/updated listings out of {} fetched",
+                    scraper.getSource(), saved, dtos.size());
+        } catch (Exception e) {
+            log.error("Scraper {} failed", scraper.getSource(), e);
         }
     }
 
@@ -104,8 +115,13 @@ public class ScraperService {
             }
         }
 
-        listingMapper.insert(listing);
-        return true;
+        try {
+            listingMapper.insert(listing);
+            return true;
+        } catch (DuplicateKeyException e) {
+            log.debug("Duplicate URL skipped: {}", dto.getUrl());
+            return false;
+        }
     }
 
     private String toJson(Object obj) {
