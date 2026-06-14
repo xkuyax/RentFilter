@@ -61,7 +61,7 @@ export default function Lightbox({ images, index, onClose, onPrev, onNext }: Pro
       <img
         src={images[index]}
         alt=""
-        className="max-w-full max-h-full object-contain p-4"
+        className="max-w-[95vw] max-h-[90vh] object-contain"
         onClick={(e) => e.stopPropagation()}
       />
     </div>

@@ -40,13 +40,13 @@ export default function DetailPanel({ listing: p, onClose }: Props) {
 
       {images.length > 0 && (
         <div
-          className="relative w-full h-64 bg-gray-100 flex-shrink-0 cursor-pointer"
+          className="relative w-full h-72 bg-gray-100 flex-shrink-0 cursor-pointer"
           onClick={() => setLightboxOpen(true)}
         >
           <img
             src={images[imgIdx]}
             alt=""
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
           />
           {images.length > 1 && (
             <>
