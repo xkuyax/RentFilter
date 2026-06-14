@@ -93,6 +93,11 @@
         )
     </insert>
 
+    <update id="updateCoordinates">
+        UPDATE listings SET latitude = #{latitude}, longitude = #{longitude}
+        WHERE id = #{id}
+    </update>
+
     <delete id="deleteAll">
         DELETE FROM listings
     </delete>

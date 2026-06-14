@@ -36,5 +36,7 @@ public interface ListingMapper {
 
     int insert(Listing listing);
 
+    int updateCoordinates(Listing listing);
+
     void deleteAll();
 }

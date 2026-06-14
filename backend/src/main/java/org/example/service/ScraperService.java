@@ -54,6 +54,16 @@ public class ScraperService {
     private boolean saveOrUpdate(Source source, ListingDto dto) {
         Optional<Listing> existing = listingMapper.findByUrl(dto.getUrl());
         if (existing.isPresent()) {
+            Listing ex = existing.get();
+            if ((ex.getLatitude() == null || ex.getLongitude() == null)
+                    && geocodingService != null) {
+                var coords = geocodingService.geocode(ex.getAddress());
+                if (coords != null) {
+                    ex.setLatitude(coords.lat());
+                    ex.setLongitude(coords.lng());
+                    listingMapper.updateCoordinates(ex);
+                }
+            }
             return false;
         }
 
