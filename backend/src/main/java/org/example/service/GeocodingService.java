@@ -36,7 +36,8 @@ public class GeocodingService {
         this.normalizer = normalizer;
     }
 
-    public record Coords(double lat, double lng) {}
+    public record Coords(double lat, double lng) {
+    }
 
     public Coords geocode(String address) {
         List<String> candidates = normalizer.normalize(address);
@@ -108,8 +109,12 @@ public class GeocodingService {
         List<Listing> all = mapper.findAllFiltered(null, null, null, null, null, 0, Integer.MAX_VALUE);
         int filled = 0;
         for (Listing listing : all) {
-            if (withCoords.contains(listing.getId())) continue;
-            if (listing.getAddress() == null || listing.getAddress().isBlank()) continue;
+            if (withCoords.contains(listing.getId())) {
+                continue;
+            }
+            if (listing.getAddress() == null || listing.getAddress().isBlank()) {
+                continue;
+            }
 
             Coords coords = geocode(listing.getAddress());
             if (coords != null) {

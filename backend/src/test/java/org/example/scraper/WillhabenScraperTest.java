@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class WillhabenScraperTest {
 
@@ -98,7 +98,9 @@ class WillhabenScraperTest {
 
         for (JsonNode ad : ads) {
             ListingDto dto = scraper.parseAd(ad);
-            if (dto.getImageUrls() == null || dto.getImageUrls().isEmpty()) continue;
+            if (dto.getImageUrls() == null || dto.getImageUrls().isEmpty()) {
+                continue;
+            }
 
             for (String url : dto.getImageUrls()) {
                 assertThat(url.toLowerCase())

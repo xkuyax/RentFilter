@@ -60,14 +60,18 @@ public abstract class AbstractScraper implements ListingScraper {
     }
 
     protected String parsePrice(String text) {
-        if (text == null) return null;
+        if (text == null) {
+            return null;
+        }
         return text.replaceAll("[^0-9,.]", "")
                 .replace(",", ".")
                 .replaceAll("\\.(?=.*\\.)", "");
     }
 
     protected Float parseFloat(String text) {
-        if (text == null) return null;
+        if (text == null) {
+            return null;
+        }
         try {
             String cleaned = text.replace(",", ".").replaceAll("[^0-9.]", "");
             return Float.parseFloat(cleaned);

@@ -134,7 +134,9 @@ public class ScraperService {
     }
 
     private String toJson(Object obj) {
-        if (obj == null) return null;
+        if (obj == null) {
+            return null;
+        }
         try {
             return objectMapper.writeValueAsString(obj);
         } catch (JsonProcessingException e) {

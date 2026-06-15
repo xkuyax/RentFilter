@@ -18,13 +18,13 @@ public class ListingService {
     }
 
     public List<Listing> findListings(String source, BigDecimal minPrice, BigDecimal maxPrice,
-                                       Float minRooms, Float minArea,
-                                       int offset, int limit) {
+                                      Float minRooms, Float minArea,
+                                      int offset, int limit) {
         return listingMapper.findAllFiltered(source, minPrice, maxPrice, minRooms, minArea, offset, limit);
     }
 
     public long countFiltered(String source, BigDecimal minPrice, BigDecimal maxPrice,
-                               Float minRooms, Float minArea) {
+                              Float minRooms, Float minArea) {
         return listingMapper.countFiltered(source, minPrice, maxPrice, minRooms, minArea);
     }
 
@@ -41,8 +41,8 @@ public class ListingService {
     }
 
     public List<Listing> findAllFilteredWithCoords(String source, BigDecimal minPrice,
-                                                    BigDecimal maxPrice, Float minRooms,
-                                                    Float minArea, Float maxPricePerSqm) {
+                                                   BigDecimal maxPrice, Float minRooms,
+                                                   Float minArea, Float maxPricePerSqm) {
         return listingMapper.findAllFilteredWithCoords(
                 source, minPrice, maxPrice, minRooms, minArea, maxPricePerSqm);
     }

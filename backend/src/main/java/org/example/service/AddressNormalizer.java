@@ -18,7 +18,9 @@ public class AddressNormalizer {
         candidates.add(address);
 
         Matcher m = ADDRESS_PATTERN.matcher(address);
-        if (!m.find()) return candidates;
+        if (!m.find()) {
+            return candidates;
+        }
 
         String prefix = m.group(1).trim();
         String postalCity = m.group(2) + " " + m.group(3).trim();
@@ -49,7 +51,9 @@ public class AddressNormalizer {
     // If prefix like "Sandgasse 43/45/45a", keep as one (numbers only after slash).
     private List<String> splitBySlashIfDifferentStreets(String prefix) {
         String[] parts = prefix.split("/");
-        if (parts.length < 2) return List.of(prefix);
+        if (parts.length < 2) {
+            return List.of(prefix);
+        }
 
         // If any part after the first starts with a letter (not a number or whitespace),
         // it's a different street name
@@ -87,7 +91,9 @@ public class AddressNormalizer {
         if (!streetName.isEmpty() && !streetName.equals(fragment)) {
             numPart = fragment.substring(streetName.length()).trim();
         }
-        if (numPart.isEmpty()) return numbers;
+        if (numPart.isEmpty()) {
+            return numbers;
+        }
 
         for (String token : numPart.split("[,/]")) {
             String n = token.trim();

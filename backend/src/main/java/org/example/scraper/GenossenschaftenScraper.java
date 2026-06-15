@@ -51,8 +51,11 @@ public class GenossenschaftenScraper extends AbstractScraper {
                     for (Element p : pages) {
                         try {
                             int pn = Integer.parseInt(p.text().trim());
-                            if (pn > totalPages) totalPages = pn;
-                        } catch (NumberFormatException ignored) {}
+                            if (pn > totalPages) {
+                                totalPages = pn;
+                            }
+                        } catch (NumberFormatException ignored) {
+                        }
                     }
                 }
             }
@@ -63,24 +66,34 @@ public class GenossenschaftenScraper extends AbstractScraper {
                 if (dto != null) {
                     boolean cached = enrichAndReturnCached(dto);
                     onListing.accept(dto);
-                    if (!cached && !previousCached) Thread.sleep(requestDelayMs);
+                    if (!cached && !previousCached) {
+                        Thread.sleep(requestDelayMs);
+                    }
                     previousCached = cached;
                 }
             }
 
-            if (page >= totalPages) break;
+            if (page >= totalPages) {
+                break;
+            }
             page++;
-            if (!fr.cached()) Thread.sleep(requestDelayMs);
+            if (!fr.cached()) {
+                Thread.sleep(requestDelayMs);
+            }
         }
     }
 
     ListingDto parseCard(Element card) {
         try {
             Element link = card.selectFirst("a.residence-teaser-link");
-            if (link == null) return null;
+            if (link == null) {
+                return null;
+            }
 
             String url = link.attr("href");
-            if (!url.startsWith("http")) url = BASE + url;
+            if (!url.startsWith("http")) {
+                url = BASE + url;
+            }
 
             String extId = url.replaceAll(".*/(\\d+)/$", "$1");
 
@@ -97,14 +110,18 @@ public class GenossenschaftenScraper extends AbstractScraper {
             if (img != null) {
                 String style = img.attr("style");
                 Matcher m = Pattern.compile("url\\('([^']+)'\\)").matcher(style);
-                if (m.find()) dto.setThumbnailUrl(m.group(1));
+                if (m.find()) {
+                    dto.setThumbnailUrl(m.group(1));
+                }
             }
 
             // Extract from detail columns
             String cardText = card.text();
 
             Matcher rm = ROOMS_PATTERN.matcher(extractDetail(card, "Zimmer"));
-            if (rm.find()) dto.setRooms(Float.parseFloat(rm.group(1)));
+            if (rm.find()) {
+                dto.setRooms(Float.parseFloat(rm.group(1)));
+            }
 
             Matcher am = AREA_PATTERN.matcher(cardText);
             if (am.find()) {
@@ -127,9 +144,13 @@ public class GenossenschaftenScraper extends AbstractScraper {
             // Badges
             for (Element badge : card.select(".badge")) {
                 String text = badge.text().trim();
-                if (text.equals("Verfügbar")) dto.setAvailableFrom("sofort");
-                else if (text.equals("Geplant")) dto.setAvailableFrom("geplant");
-                else if (text.equals("In Bau")) dto.setAvailableFrom("in bau");
+                if (text.equals("Verfügbar")) {
+                    dto.setAvailableFrom("sofort");
+                } else if (text.equals("Geplant")) {
+                    dto.setAvailableFrom("geplant");
+                } else if (text.equals("In Bau")) {
+                    dto.setAvailableFrom("in bau");
+                }
             }
 
             return dto;
@@ -144,7 +165,9 @@ public class GenossenschaftenScraper extends AbstractScraper {
             Element small = div.selectFirst("small");
             if (small != null && small.text().trim().equalsIgnoreCase(label)) {
                 Element fs5 = div.selectFirst(".fs-5");
-                if (fs5 != null) return fs5.text().trim();
+                if (fs5 != null) {
+                    return fs5.text().trim();
+                }
             }
         }
         return "";
@@ -159,7 +182,9 @@ public class GenossenschaftenScraper extends AbstractScraper {
             FetchResult result = fetch(dto.getUrl());
             Document detail = result.document();
             Element script = detail.selectFirst("script[type=\"application/ld+json\"]");
-            if (script == null) return false;
+            if (script == null) {
+                return false;
+            }
 
             JsonNode json = objectMapper.readTree(script.data());
             // Schema.org Apartment type
@@ -196,7 +221,9 @@ public class GenossenschaftenScraper extends AbstractScraper {
                     benefits.add(text.split("\\d")[0].trim());
                 }
             }
-            if (!benefits.isEmpty()) dto.setBenefits(benefits);
+            if (!benefits.isEmpty()) {
+                dto.setBenefits(benefits);
+            }
 
             // Image gallery — check background-image and img tags
             List<String> images = new ArrayList<>();
@@ -209,9 +236,13 @@ public class GenossenschaftenScraper extends AbstractScraper {
             }
             for (Element img : detail.select("img.property-image, img[src*=\"wohn\"]")) {
                 String src = img.attr("src");
-                if (!src.isBlank()) images.add(src);
+                if (!src.isBlank()) {
+                    images.add(src);
+                }
             }
-            if (!images.isEmpty()) dto.setImageUrls(images);
+            if (!images.isEmpty()) {
+                dto.setImageUrls(images);
+            }
 
             return result.cached();
         } catch (Exception e) {

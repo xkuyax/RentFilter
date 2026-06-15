@@ -31,11 +31,21 @@ public class PopulateCache {
         // Summary of what we got
         int withAddress = 0, withImages = 0, withBenefits = 0, withCosts = 0, with360 = 0;
         for (ListingDto dto : results) {
-            if (dto.getAddress() != null) withAddress++;
-            if (dto.getImageUrls() != null && !dto.getImageUrls().isEmpty()) withImages++;
-            if (dto.getBenefits() != null && !dto.getBenefits().isEmpty()) withBenefits++;
-            if (dto.getNetRent() != null) withCosts++;
-            if (dto.isHas360View()) with360++;
+            if (dto.getAddress() != null) {
+                withAddress++;
+            }
+            if (dto.getImageUrls() != null && !dto.getImageUrls().isEmpty()) {
+                withImages++;
+            }
+            if (dto.getBenefits() != null && !dto.getBenefits().isEmpty()) {
+                withBenefits++;
+            }
+            if (dto.getNetRent() != null) {
+                withCosts++;
+            }
+            if (dto.isHas360View()) {
+                with360++;
+            }
         }
 
         System.out.println("With address: " + withAddress + "/" + results.size());

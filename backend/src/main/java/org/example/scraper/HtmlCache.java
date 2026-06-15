@@ -28,7 +28,9 @@ public class HtmlCache {
     }
 
     public String get(String url) {
-        if (!enabled) return null;
+        if (!enabled) {
+            return null;
+        }
         Path file = filename(url);
         if (Files.exists(file)) {
             try {
@@ -41,7 +43,9 @@ public class HtmlCache {
     }
 
     public void put(String url, String body) {
-        if (!enabled) return;
+        if (!enabled) {
+            return;
+        }
         try {
             Files.createDirectories(cacheDir);
             Path file = filename(url);
@@ -57,7 +61,12 @@ public class HtmlCache {
             if (Files.exists(cacheDir)) {
                 try (var files = Files.walk(cacheDir)) {
                     files.sorted(java.util.Comparator.reverseOrder())
-                            .forEach(p -> { try { Files.deleteIfExists(p); } catch (IOException ignored) {} });
+                            .forEach(p -> {
+                                try {
+                                    Files.deleteIfExists(p);
+                                } catch (IOException ignored) {
+                                }
+                            });
                 }
             }
         } catch (IOException e) {

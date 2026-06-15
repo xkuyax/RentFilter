@@ -35,92 +35,234 @@ public class Listing {
     private boolean has360View;
     private String matterportUrl;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getExternalId() { return externalId; }
-    public void setExternalId(String externalId) { this.externalId = externalId; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public Source getSource() { return source; }
-    public void setSource(Source source) { this.source = source; }
+    public String getExternalId() {
+        return externalId;
+    }
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    public void setExternalId(String externalId) {
+        this.externalId = externalId;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public Source getSource() {
+        return source;
+    }
 
-    public BigDecimal getPrice() { return price; }
-    public void setPrice(BigDecimal price) { this.price = price; }
+    public void setSource(Source source) {
+        this.source = source;
+    }
 
-    public Float getRooms() { return rooms; }
-    public void setRooms(Float rooms) { this.rooms = rooms; }
+    public String getTitle() {
+        return title;
+    }
 
-    public Float getArea() { return area; }
-    public void setArea(Float area) { this.area = area; }
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-    public String getAddress() { return address; }
-    public void setAddress(String address) { this.address = address; }
+    public String getDescription() {
+        return description;
+    }
 
-    public Double getLatitude() { return latitude; }
-    public void setLatitude(Double latitude) { this.latitude = latitude; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-    public Double getLongitude() { return longitude; }
-    public void setLongitude(Double longitude) { this.longitude = longitude; }
+    public BigDecimal getPrice() {
+        return price;
+    }
 
-    public String getUrl() { return url; }
-    public void setUrl(String url) { this.url = url; }
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
 
-    public Instant getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public Float getRooms() {
+        return rooms;
+    }
 
-    public Instant getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+    public void setRooms(Float rooms) {
+        this.rooms = rooms;
+    }
 
-    public BigDecimal getNetRent() { return netRent; }
-    public void setNetRent(BigDecimal netRent) { this.netRent = netRent; }
+    public Float getArea() {
+        return area;
+    }
 
-    public BigDecimal getOperatingCosts() { return operatingCosts; }
-    public void setOperatingCosts(BigDecimal operatingCosts) { this.operatingCosts = operatingCosts; }
+    public void setArea(Float area) {
+        this.area = area;
+    }
 
-    public BigDecimal getVat() { return vat; }
-    public void setVat(BigDecimal vat) { this.vat = vat; }
+    public String getAddress() {
+        return address;
+    }
 
-    public BigDecimal getDeposit() { return deposit; }
-    public void setDeposit(BigDecimal deposit) { this.deposit = deposit; }
+    public void setAddress(String address) {
+        this.address = address;
+    }
 
-    public String getAvailableFrom() { return availableFrom; }
-    public void setAvailableFrom(String availableFrom) { this.availableFrom = availableFrom; }
+    public Double getLatitude() {
+        return latitude;
+    }
 
-    public String getProvision() { return provision; }
-    public void setProvision(String provision) { this.provision = provision; }
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
 
-    public Integer getBuildYear() { return buildYear; }
-    public void setBuildYear(Integer buildYear) { this.buildYear = buildYear; }
+    public Double getLongitude() {
+        return longitude;
+    }
 
-    public Float getHeatingDemand() { return heatingDemand; }
-    public void setHeatingDemand(Float heatingDemand) { this.heatingDemand = heatingDemand; }
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
 
-    public Float getFgee() { return fgee; }
-    public void setFgee(Float fgee) { this.fgee = fgee; }
+    public String getUrl() {
+        return url;
+    }
 
-    public String getBenefits() { return benefits; }
-    public void setBenefits(String benefits) { this.benefits = benefits; }
+    public void setUrl(String url) {
+        this.url = url;
+    }
 
-    public String getImageUrls() { return imageUrls; }
-    public void setImageUrls(String imageUrls) { this.imageUrls = imageUrls; }
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
 
-    public String getThumbnailUrl() { return thumbnailUrl; }
-    public void setThumbnailUrl(String thumbnailUrl) { this.thumbnailUrl = thumbnailUrl; }
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
 
-    public boolean isHas360View() { return has360View; }
-    public void setHas360View(boolean has360View) { this.has360View = has360View; }
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
 
-    public String getMatterportUrl() { return matterportUrl; }
-    public void setMatterportUrl(String matterportUrl) { this.matterportUrl = matterportUrl; }
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public BigDecimal getNetRent() {
+        return netRent;
+    }
+
+    public void setNetRent(BigDecimal netRent) {
+        this.netRent = netRent;
+    }
+
+    public BigDecimal getOperatingCosts() {
+        return operatingCosts;
+    }
+
+    public void setOperatingCosts(BigDecimal operatingCosts) {
+        this.operatingCosts = operatingCosts;
+    }
+
+    public BigDecimal getVat() {
+        return vat;
+    }
+
+    public void setVat(BigDecimal vat) {
+        this.vat = vat;
+    }
+
+    public BigDecimal getDeposit() {
+        return deposit;
+    }
+
+    public void setDeposit(BigDecimal deposit) {
+        this.deposit = deposit;
+    }
+
+    public String getAvailableFrom() {
+        return availableFrom;
+    }
+
+    public void setAvailableFrom(String availableFrom) {
+        this.availableFrom = availableFrom;
+    }
+
+    public String getProvision() {
+        return provision;
+    }
+
+    public void setProvision(String provision) {
+        this.provision = provision;
+    }
+
+    public Integer getBuildYear() {
+        return buildYear;
+    }
+
+    public void setBuildYear(Integer buildYear) {
+        this.buildYear = buildYear;
+    }
+
+    public Float getHeatingDemand() {
+        return heatingDemand;
+    }
+
+    public void setHeatingDemand(Float heatingDemand) {
+        this.heatingDemand = heatingDemand;
+    }
+
+    public Float getFgee() {
+        return fgee;
+    }
+
+    public void setFgee(Float fgee) {
+        this.fgee = fgee;
+    }
+
+    public String getBenefits() {
+        return benefits;
+    }
+
+    public void setBenefits(String benefits) {
+        this.benefits = benefits;
+    }
+
+    public String getImageUrls() {
+        return imageUrls;
+    }
+
+    public void setImageUrls(String imageUrls) {
+        this.imageUrls = imageUrls;
+    }
+
+    public String getThumbnailUrl() {
+        return thumbnailUrl;
+    }
+
+    public void setThumbnailUrl(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
+    }
+
+    public boolean isHas360View() {
+        return has360View;
+    }
+
+    public void setHas360View(boolean has360View) {
+        this.has360View = has360View;
+    }
+
+    public String getMatterportUrl() {
+        return matterportUrl;
+    }
+
+    public void setMatterportUrl(String matterportUrl) {
+        this.matterportUrl = matterportUrl;
+    }
 
     public Float getPricePerSqm() {
-        if (price == null || area == null || area == 0) return null;
+        if (price == null || area == null || area == 0) {
+            return null;
+        }
         return price.floatValue() / area;
     }
 }

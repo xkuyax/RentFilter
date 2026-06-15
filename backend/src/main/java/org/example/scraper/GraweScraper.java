@@ -18,7 +18,6 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -84,14 +83,20 @@ public class GraweScraper extends AbstractScraper {
                 if (dto != null) {
                     boolean cached = enrichAndReturnCached(dto);
                     onListing.accept(dto);
-                    if (!cached && !previousCached) Thread.sleep(requestDelayMs);
+                    if (!cached && !previousCached) {
+                        Thread.sleep(requestDelayMs);
+                    }
                     previousCached = cached;
                 }
             }
 
-            if (page >= totalPages) break;
+            if (page >= totalPages) {
+                break;
+            }
             page++;
-            if (!isCacheEnabled()) Thread.sleep(requestDelayMs);
+            if (!isCacheEnabled()) {
+                Thread.sleep(requestDelayMs);
+            }
         }
     }
 
@@ -123,7 +128,9 @@ public class GraweScraper extends AbstractScraper {
     ListingDto parseCard(Element card) {
         try {
             Element link = card.selectFirst("a[href]");
-            if (link == null) return null;
+            if (link == null) {
+                return null;
+            }
 
             String url = link.attr("href");
             if (!url.startsWith("http")) {
@@ -236,10 +243,14 @@ public class GraweScraper extends AbstractScraper {
     void extractCostTable(Document detail, ListingDto dto) {
         for (Element row : detail.select(".flex.justify-between")) {
             String cls = row.attr("class");
-            if (!(cls.contains("border-t-1") || cls.contains("border-b-1")) || !cls.contains("py-2")) continue;
+            if (!(cls.contains("border-t-1") || cls.contains("border-b-1")) || !cls.contains("py-2")) {
+                continue;
+            }
 
             Elements divs = row.children();
-            if (divs.size() < 2) continue;
+            if (divs.size() < 2) {
+                continue;
+            }
 
             String label = divs.get(0).wholeText().trim().toLowerCase();
             String value = divs.get(1).wholeText().trim();
@@ -251,7 +262,9 @@ public class GraweScraper extends AbstractScraper {
             } else if (label.equals("mwst.")) {
                 dto.setVat(parseMoney(value));
             } else if (label.contains("gesamtkosten")) {
-                if (dto.getPrice() == null) dto.setPrice(parseMoney(value));
+                if (dto.getPrice() == null) {
+                    dto.setPrice(parseMoney(value));
+                }
             } else if (label.contains("kaution")) {
                 dto.setDeposit(parseMoney(value));
             } else if (label.contains("verfügbar")) {
@@ -259,7 +272,10 @@ public class GraweScraper extends AbstractScraper {
             } else if (label.contains("provision")) {
                 dto.setProvision(value);
             } else if (label.equals("baujahr")) {
-                try { dto.setBuildYear(Integer.parseInt(value)); } catch (NumberFormatException ignored) {}
+                try {
+                    dto.setBuildYear(Integer.parseInt(value));
+                } catch (NumberFormatException ignored) {
+                }
             }
         }
     }
@@ -274,13 +290,15 @@ public class GraweScraper extends AbstractScraper {
         if (m.find()) {
             try {
                 dto.setHeatingDemand(Float.parseFloat(m.group(1).replace(",", ".")));
-            } catch (NumberFormatException ignored) {}
+            } catch (NumberFormatException ignored) {
+            }
         }
         m = Pattern.compile("fGEE-Wert:\\s*([0-9.,]+)").matcher(fullText);
         if (m.find()) {
             try {
                 dto.setFgee(Float.parseFloat(m.group(1).replace(",", ".")));
-            } catch (NumberFormatException ignored) {}
+            } catch (NumberFormatException ignored) {
+            }
         }
     }
 
@@ -295,7 +313,9 @@ public class GraweScraper extends AbstractScraper {
     // --- helpers ---
 
     private BigDecimal parseMoney(String text) {
-        if (text == null) return null;
+        if (text == null) {
+            return null;
+        }
         Matcher m = MONEY_PATTERN.matcher(text);
         if (m.find()) {
             String cleaned = m.group(1).replace(".", "").replace(",", ".");
@@ -310,7 +330,9 @@ public class GraweScraper extends AbstractScraper {
 
     private Float extractFloat(String text, String keyword) {
         int idx = text.indexOf(keyword);
-        if (idx < 0) return null;
+        if (idx < 0) {
+            return null;
+        }
         Matcher m = FLOAT_PATTERN.matcher(text.substring(idx));
         if (m.find()) {
             try {
@@ -324,7 +346,9 @@ public class GraweScraper extends AbstractScraper {
 
     private BigDecimal extractMoney(String text, String keyword) {
         int idx = text.indexOf(keyword);
-        if (idx < 0) return null;
+        if (idx < 0) {
+            return null;
+        }
         Matcher m = MONEY_PATTERN.matcher(text.substring(idx));
         if (m.find()) {
             String cleaned = m.group(1).replace(".", "").replace(",", ".");

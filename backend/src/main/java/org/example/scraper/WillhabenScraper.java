@@ -71,14 +71,20 @@ public class WillhabenScraper extends AbstractScraper {
                 if (dto != null) {
                     boolean cached = enrichFromDetailPage(dto);
                     onListing.accept(dto);
-                    if (!cached && !previousCached) Thread.sleep(requestDelayMs);
+                    if (!cached && !previousCached) {
+                        Thread.sleep(requestDelayMs);
+                    }
                     previousCached = cached;
                 }
             }
 
-            if (page >= totalPages) break;
+            if (page >= totalPages) {
+                break;
+            }
             page++;
-            if (!fr.cached()) Thread.sleep(requestDelayMs);
+            if (!fr.cached()) {
+                Thread.sleep(requestDelayMs);
+            }
         }
     }
 
@@ -116,7 +122,9 @@ public class WillhabenScraper extends AbstractScraper {
 
             // Area
             String areaStr = attrs.get("ESTATE_SIZE/LIVING_AREA");
-            if (areaStr == null) areaStr = attrs.get("ESTATE_SIZE");
+            if (areaStr == null) {
+                areaStr = attrs.get("ESTATE_SIZE");
+            }
             if (areaStr != null) {
                 dto.setArea(Float.parseFloat(areaStr));
             }
@@ -142,36 +150,49 @@ public class WillhabenScraper extends AbstractScraper {
             JsonNode imgList = ad.path("advertImageList").path("advertImage");
             for (JsonNode img : imgList) {
                 String imgUrl = img.path("referenceImageUrl").asText(null);
-                if (imgUrl == null) imgUrl = img.path("mainImageUrl").asText(null);
+                if (imgUrl == null) {
+                    imgUrl = img.path("mainImageUrl").asText(null);
+                }
                 if (imgUrl != null) {
                     imgUrl = imgUrl.replace("_n.", ".").replace("_hoved.", ".").replace("_thumb.", ".");
                     imageUrls.add(imgUrl);
                 }
             }
-            if (!imageUrls.isEmpty()) dto.setImageUrls(imageUrls);
+            if (!imageUrls.isEmpty()) {
+                dto.setImageUrls(imageUrls);
+            }
 
             // Thumbnail
             if (!imageUrls.isEmpty()) {
-                dto.setThumbnailUrl(imageUrls.get(0));
+                dto.setThumbnailUrl(imageUrls.getFirst());
             }
 
             // Description
             String body = attrs.get("BODY_DYN");
-            if (body != null) dto.setDescription(body);
+            if (body != null) {
+                dto.setDescription(body);
+            }
 
             // Available
             String status = ad.path("advertStatus").path("id").asText();
-            if ("active".equals(status)) dto.setAvailableFrom("sofort");
+            if ("active".equals(status)) {
+                dto.setAvailableFrom("sofort");
+            }
 
             // Build year
             String buildYear = attrs.get("CONSTRUCTION_YEAR");
             if (buildYear != null) {
-                try { dto.setBuildYear(Integer.parseInt(buildYear)); } catch (NumberFormatException ignored) {}
+                try {
+                    dto.setBuildYear(Integer.parseInt(buildYear));
+                } catch (NumberFormatException ignored) {
+                }
             }
 
             // Provision
             String commission = attrs.get("COMMISSION");
-            if (commission != null) dto.setProvision(commission);
+            if (commission != null) {
+                dto.setProvision(commission);
+            }
 
             return dto;
         } catch (Exception e) {
@@ -195,7 +216,9 @@ public class WillhabenScraper extends AbstractScraper {
     }
 
     boolean enrichFromDetailPage(ListingDto dto) {
-        if (dto.getUrl() == null || dto.getUrl().equals(SEARCH_URL)) return true;
+        if (dto.getUrl() == null || dto.getUrl().equals(SEARCH_URL)) {
+            return true;
+        }
 
         try {
             FetchResult fr = fetch(dto.getUrl());
@@ -232,7 +255,9 @@ public class WillhabenScraper extends AbstractScraper {
                         .replaceAll("\\n{3,}", "\n\n")
                         .replaceAll(" {2,}", " ")
                         .trim();
-                if (desc.length() > 20) dto.setDescription(desc);
+                if (desc.length() > 20) {
+                    dto.setDescription(desc);
+                }
             }
 
             // Try to extract floor plans from embedded JSON
@@ -242,13 +267,17 @@ public class WillhabenScraper extends AbstractScraper {
                 // Also try walking all nodes for advertImageList
                 if (!fps.isArray() || fps.isEmpty()) {
                     JsonNode walked = findInJson(root, "advertImageList");
-                    if (walked != null) fps = walked.path("floorPlans");
+                    if (walked != null) {
+                        fps = walked.path("floorPlans");
+                    }
                 }
                 if (fps.isArray() && !fps.isEmpty()) {
                     List<String> floorPlans = new ArrayList<>();
                     for (JsonNode fp : fps) {
                         String fpUrl = fp.path("referenceImageUrl").asText(null);
-                        if (fpUrl == null) fpUrl = fp.path("mainImageUrl").asText(null);
+                        if (fpUrl == null) {
+                            fpUrl = fp.path("mainImageUrl").asText(null);
+                        }
                         if (fpUrl != null) {
                             fpUrl = fpUrl.replace("_n.", ".").replace("_hoved.", ".").replace("_thumb.", ".");
                             floorPlans.add(fpUrl);
@@ -284,11 +313,15 @@ public class WillhabenScraper extends AbstractScraper {
                     }
                     case "p", "div" -> {
                         String t = extractStructuredText(child).trim();
-                        if (!t.isBlank()) sb.append("\n").append(t);
+                        if (!t.isBlank()) {
+                            sb.append("\n").append(t);
+                        }
                     }
                     default -> {
                         String t = extractStructuredText(child).trim();
-                        if (!t.isBlank()) sb.append(" ").append(t);
+                        if (!t.isBlank()) {
+                            sb.append(" ").append(t);
+                        }
                     }
                 }
             } else if (node instanceof org.jsoup.nodes.TextNode) {
@@ -304,7 +337,9 @@ public class WillhabenScraper extends AbstractScraper {
         for (Element li : container.select("ul > li")) {
             // Try spans first, then divs as direct children
             var children = li.select("> span");
-            if (children.size() < 2) children = li.select("> div");
+            if (children.size() < 2) {
+                children = li.select("> div");
+            }
             if (children.size() >= 2) {
                 String label = children.get(0).wholeText().trim();
                 String value = children.get(1).wholeText().trim();
@@ -320,16 +355,22 @@ public class WillhabenScraper extends AbstractScraper {
 
     private JsonNode findInJson(JsonNode node, String key) {
         if (node.isObject()) {
-            if (node.has(key)) return node.get(key);
+            if (node.has(key)) {
+                return node.get(key);
+            }
             var it = node.fields();
             while (it.hasNext()) {
                 JsonNode found = findInJson(it.next().getValue(), key);
-                if (found != null) return found;
+                if (found != null) {
+                    return found;
+                }
             }
         } else if (node.isArray()) {
             for (JsonNode child : node) {
                 JsonNode found = findInJson(child, key);
-                if (found != null) return found;
+                if (found != null) {
+                    return found;
+                }
             }
         }
         return null;
